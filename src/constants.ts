@@ -1,9 +1,9 @@
-import path from 'path';
+import * as path from 'path';
 import { unlinkSync as rm, writeFileSync as writeFile, readFileSync as readFile } from 'fs';
 import { sync as mkdirp } from 'mkdirp';
 import { template as makeTemplate } from 'lodash';
 import applicationConfigPath = require('application-config-path');
-import eol from 'eol';
+import * as eol from 'eol';
 import { mktmp } from './utils';
 
 // Platform shortcuts

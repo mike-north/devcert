@@ -1,17 +1,20 @@
-import path from 'path';
-import url from 'url';
-import createDebug from 'debug';
-import assert from 'assert';
-import getPort from 'get-port';
-import http from 'http';
+import * as path from 'path';
+import * as url from 'url';
+import * as createDebug from 'debug';
+import * as assert from 'assert';
+import * as getPort from 'get-port';
+import * as http from 'http';
 import { sync as glob } from 'glob';
-import { readFileSync as readFile, existsSync as exists } from 'fs';
+import { readFileSync as readFile, existsSync as exists, existsSync } from 'fs';
 import { run } from '../utils';
 import { isMac, isLinux , configDir, getLegacyConfigDir } from '../constants';
 import UI from '../user-interface';
 import { execSync as exec } from 'child_process';
 
 const debug = createDebug('devcert:platforms:shared');
+
+// import { Transform, TransformCallback } from 'stream';
+
 
 /**
  *  Given a directory or glob pattern of directories, run a callback for each db
@@ -49,7 +52,11 @@ export function removeCertificateFromNSSCertDB(nssDirGlob: string, certPath: str
   doForNSSCertDB(nssDirGlob, (dir, version) => {
     const dirArg = version === 'modern' ? `sql:${ dir }` : dir;
     try {
-      run(`${ certutilPath } -A -d "${ dirArg }" -t 'C,,' -i "${ certPath }" -n devcert`)
+      if (existsSync(certPath)) {
+        run(`${ certutilPath } -D -d "${ dirArg }" -t 'C,,' -i "${ certPath }" -n devcert`);
+      } else {
+        debug(`no certificate found on disk at ${certPath}`)
+      }
     } catch (e) {
       debug(`failed to remove ${ certPath } from ${ dir }, continuing. ${ e.toString() }`)
     }

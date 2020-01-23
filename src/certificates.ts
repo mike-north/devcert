@@ -1,5 +1,5 @@
 // import path from 'path';
-import createDebug from 'debug';
+import * as createDebug from 'debug';
 import { sync as mkdirp } from 'mkdirp';
 import { chmodSync as chmod } from 'fs';
 import { pathForDomain, withDomainSigningRequestConfig, withDomainCertificateConfig } from './constants';

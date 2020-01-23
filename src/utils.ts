@@ -1,12 +1,15 @@
-import { execSync, ExecSyncOptions } from 'child_process';
-import tmp from 'tmp';
-import createDebug from 'debug';
-import path from 'path';
+import { execSync, ExecSyncOptions, spawn, ChildProcess } from 'child_process';
+import * as tmp from 'tmp';
+import * as createDebug from 'debug';
+import * as path from 'path';
 import sudoPrompt from 'sudo-prompt';
 
 import { configPath } from './constants';
+import { promisify } from 'util';
 
 const debug = createDebug('devcert:util');
+
+const _pSpawn = promisify<string,ExecSyncOptions, ChildProcess>(spawn);
 
 export function openssl(cmd: string) {
   return run(`openssl ${ cmd }`, {
@@ -20,6 +23,11 @@ export function openssl(cmd: string) {
 export function run(cmd: string, options: ExecSyncOptions = {}) {
   debug(`exec: \`${ cmd }\``);
   return execSync(cmd, options);
+}
+
+export function pSawn(cmd: string, options: ExecSyncOptions = {}): Promise<ChildProcess> {
+  debug(`spawn: \`${ cmd }\``);
+  return _pSpawn(cmd, options);
 }
 
 export function waitForUser() {

@@ -3,7 +3,7 @@ import {
   readFileSync as readFile,
   writeFileSync as writeFile
 } from 'fs';
-import createDebug from 'debug';
+import * as createDebug from 'debug';
 
 import {
   domainsDir,

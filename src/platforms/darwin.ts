@@ -1,6 +1,6 @@
-import path from 'path';
-import { writeFileSync as writeFile, existsSync as exists, readFileSync as read } from 'fs';
-import createDebug from 'debug';
+import * as path from 'path';
+import { writeFileSync as writeFile, existsSync as exists, readFileSync as read, existsSync } from 'fs';
+import * as createDebug from 'debug';
 import { sync as commandExists } from 'command-exists';
 import { run } from '../utils';
 import { Options } from '../index';
@@ -59,7 +59,13 @@ export default class MacOSPlatform implements Platform {
   removeFromTrustStores(certificatePath: string) {
     debug('Removing devcert root CA from macOS system keychain');
     try {
-      run(`sudo security remove-trusted-cert -d "${ certificatePath }"`);
+      if (existsSync(certificatePath)) {
+        console.log(read(certificatePath).toString())
+        run(`sudo security remove-trusted-cert -d "${ certificatePath }"`);
+      } else {
+        debug("no certificate found to remove: " + certificatePath)
+      }
+
     } catch(e) {
       debug(`failed to remove ${ certificatePath } from macOS cert store, continuing. ${ e.toString() }`);
     }

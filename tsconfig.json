@@ -14,7 +14,7 @@
       "baseUrl": ".",
       "skipLibCheck": true,
       "sourceRoot": ".",
-      "noUnusedLocals": true,
-      "esModuleInterop": true
-  }
+      "noUnusedLocals": true
+  },
+  "include": ["src"]
 }
