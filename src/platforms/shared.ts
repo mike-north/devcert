@@ -4,6 +4,7 @@ import createDebug from 'debug';
 import assert from 'assert';
 import getPort from 'get-port';
 import http from 'http';
+import { existsSync } from 'fs';
 import { sync as glob } from 'glob';
 import { readFileSync as readFile, existsSync as exists } from 'fs';
 import { run } from '../utils';
@@ -53,7 +54,9 @@ export function removeCertificateFromNSSCertDB(nssDirGlob: string, certPath: str
   doForNSSCertDB(nssDirGlob, (dir, version) => {
     const dirArg = version === 'modern' ? `sql:${ dir }` : dir;
     try {
-      run(`${ certutilPath } -A -d "${ dirArg }" -t 'C,,' -i "${ certPath }" -n devcert`)
+      if (existsSync(certPath)) {
+        run(`${ certutilPath } -A -d "${ dirArg }" -t 'C,,' -i "${ certPath }" -n devcert`)
+      }
     } catch (e) {
       debug(`failed to remove ${ certPath } from ${ dir }, continuing. ${ e.toString() }`)
     }
