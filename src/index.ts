@@ -85,7 +85,7 @@ export async function certificateFor<O extends Options, CO extends Partial<CertO
   }
 }
 
-async function certificateForImpl<O extends Options, CO extends Partial<CertOptions>>(commonName: string, alternativeNames: string[], options: O = {} as O, partialCertOptions: CO = {} as O): Promise<IReturnData<O>> {
+async function certificateForImpl<O extends Options, CO extends Partial<CertOptions>>(commonName: string, alternativeNames: string[], options: O = {} as O, partialCertOptions: CO = {} as CO): Promise<IReturnData<O>> {
   debug(`Certificate requested for ${ commonName }. Skipping certutil install: ${ Boolean(options.skipCertutilInstall) }. Skipping hosts file: ${ Boolean(options.skipHostsFile) }`);
   const certOptions = {...DEFAULT_CERT_OPTIONS, ...partialCertOptions}
   if (options.ui) {
@@ -108,7 +108,7 @@ async function certificateForImpl<O extends Options, CO extends Partial<CertOpti
     await installCertificateAuthority(options, certOptions);
   } else if (options.getCaBuffer || options.getCaPath) {
     debug('Root CA is not readable, but it probably is because an earlier version of devcert locked it. Trying to fix...');
-    await ensureCACertReadable(options);
+    await ensureCACertReadable(options, certOptions);
   }
 
   if (!exists(pathForDomain(commonName, `certificate.crt`))) {
