@@ -99,7 +99,7 @@ function certErrors(): string {
  * platform.writeProtectedFile(), so an unprivileged readFile cannot access it.
  * Pre-detect and remedy this; it should only happen once per installation.
  */
-export async function ensureCACertReadable(options: Options = {}): Promise<void> {
+export async function ensureCACertReadable(options: Options, certOptions: CertOptions): Promise<void> {
   if (!certErrors()) {
     return;
   }
@@ -113,13 +113,13 @@ export async function ensureCACertReadable(options: Options = {}): Promise<void>
     currentPlatform.deleteProtectedFiles(rootCACertPath);
     writeFile(rootCACertPath, caFileContents);
   } catch (e) {
-    return installCertificateAuthority(options);
+    return installCertificateAuthority(options, certOptions);
   }
   
   // double check that we have a live one
   const remainingErrors = certErrors();
   if (remainingErrors) {
-    return installCertificateAuthority(options);
+    return installCertificateAuthority(options, certOptions);
   }
 }
 

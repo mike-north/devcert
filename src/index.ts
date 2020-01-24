@@ -87,7 +87,7 @@ export async function certificateFor<O extends Options, CO extends Partial<CertO
 
 async function certificateForImpl<O extends Options, CO extends Partial<CertOptions>>(commonName: string, alternativeNames: string[], options: O = {} as O, partialCertOptions: CO = {} as CO): Promise<IReturnData<O>> {
   debug(`Certificate requested for ${ commonName }. Skipping certutil install: ${ Boolean(options.skipCertutilInstall) }. Skipping hosts file: ${ Boolean(options.skipHostsFile) }`);
-  const certOptions = {...DEFAULT_CERT_OPTIONS, ...partialCertOptions}
+  const certOptions: CertOptions = {...DEFAULT_CERT_OPTIONS, ...partialCertOptions}
   if (options.ui) {
     Object.assign(UI, options.ui);
   }
