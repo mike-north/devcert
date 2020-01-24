@@ -20,7 +20,7 @@ import {
 import currentPlatform from './platforms';
 import { openssl, mktmp } from './utils';
 import { generateKey } from './certificates';
-import { Options } from './index';
+import { Options, CertOptions } from './index';
 
 const debug = createDebug('devcert:certificate-authority');
 
@@ -28,7 +28,7 @@ const debug = createDebug('devcert:certificate-authority');
  * Install the once-per-machine trusted root CA. We'll use this CA to sign
  * per-app certs.
  */
-export default async function installCertificateAuthority(options: Options = {}): Promise<void> {
+export default async function installCertificateAuthority(options: Options = {}, certOptions: CertOptions): Promise<void> {
   debug(`Uninstalling existing certificates, which will be void once any existing CA is gone`);
   uninstall();
   ensureConfigDirs();
@@ -43,7 +43,7 @@ export default async function installCertificateAuthority(options: Options = {})
   generateKey(rootKeyPath);
 
   debug(`Generating a CA certificate`);
-  openssl(`req -new -x509 -config "${ caSelfSignConfig }" -key "${ rootKeyPath }" -out "${ rootCACertPath }" -days 825`);
+  openssl(`req -new -x509 -config "${ caSelfSignConfig }" -key "${ rootKeyPath }" -out "${ rootCACertPath }" -days ${certOptions.caCertExpiry}`);
 
   debug('Saving certificate authority credentials');
   await saveCertificateAuthorityCredentials(rootKeyPath);

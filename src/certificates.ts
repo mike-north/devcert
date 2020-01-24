@@ -5,6 +5,7 @@ import { chmodSync as chmod } from 'fs';
 import { pathForDomain, withDomainSigningRequestConfig, withDomainCertificateConfig } from './constants';
 import { openssl } from './utils';
 import { withCertificateAuthorityCredentials } from './certificate-authority';
+import { CertOptions } from 'src';
 
 const debug = createDebug('devcert:certificates');
 
@@ -15,7 +16,7 @@ const debug = createDebug('devcert:certificates');
  * individual domain certificates are signed by the devcert root CA (which was
  * added to the OS/browser trust stores), they are trusted.
  */
-export default async function generateDomainCertificate(commonName: string, alternativeNames: string[]): Promise<void> {
+export default async function generateDomainCertificate(commonName: string, alternativeNames: string[], certOptions: CertOptions): Promise<void> {
   mkdirp(pathForDomain(commonName));
 
   debug(`Generating private key for ${ commonName }`);
@@ -25,7 +26,7 @@ export default async function generateDomainCertificate(commonName: string, alte
   debug(`Generating certificate signing request for ${ commonName }`);
   let csrFile = pathForDomain(commonName, `certificate-signing-request.csr`);
   withDomainSigningRequestConfig(commonName, alternativeNames, (configpath) => {
-    openssl(`req -new -config "${ configpath }" -key "${ domainKeyPath }" -out "${ csrFile }"`);
+    openssl(`req -new -config "${ configpath }" -key "${ domainKeyPath }" -out "${ csrFile }" -days ${certOptions.domainCertExpiry}`);
   });
 
   debug(`Generating certificate for ${ commonName } from signing request and signing with root CA`);
