@@ -42,7 +42,7 @@ export function mktmp() {
 export function sudo(cmd: string): Promise<string | null> {
   return new Promise((resolve, reject) => {
     sudoPrompt.exec(cmd, { name: 'devcert' }, (err: Error | null, stdout: string | null, stderr: string | null) => {
-      let error = err || (typeof stderr === 'string' && stderr.trim().length > 0 && new Error(stderr)) ;
+      const error = err || (typeof stderr === 'string' && stderr.trim().length > 0 && new Error(stderr)) ;
       error ? reject(error) : resolve(stdout);
     });
   });

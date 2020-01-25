@@ -48,7 +48,7 @@ export default class LinuxPlatform implements Platform {
           run('sudo apt install libnss3-tools');
           debug('Installing certificate into Firefox trust stores using NSS tooling');
           await closeFirefox();
-          await addCertificateToNSSCertDB(this.FIREFOX_NSS_DIR, certificatePath, 'certutil');
+          addCertificateToNSSCertDB(this.FIREFOX_NSS_DIR, certificatePath, 'certutil');
         }
       }
     } else {
@@ -61,7 +61,7 @@ export default class LinuxPlatform implements Platform {
         UI.warnChromeOnLinuxWithoutCertutil();
       } else {
         await closeFirefox();
-        await addCertificateToNSSCertDB(this.CHROME_NSS_DIR, certificatePath, 'certutil');
+        addCertificateToNSSCertDB(this.CHROME_NSS_DIR, certificatePath, 'certutil');
       }
     } else {
       debug('Chrome does not appear to be installed, skipping Chrome-specific steps...');
@@ -86,7 +86,7 @@ export default class LinuxPlatform implements Platform {
   }
 
   async addDomainToHostFileIfMissing(domain: string) {
-    let hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
+    const hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
     if (!hostsFileContents.includes(domain)) {
       run(`echo '127.0.0.1  ${ domain }' | sudo tee -a "${ this.HOST_FILE_PATH }" > /dev/null`);
     }
@@ -99,17 +99,17 @@ export default class LinuxPlatform implements Platform {
 
   async readProtectedFile(filepath: string) {
     assertNotTouchingFiles(filepath, 'read');
-    return (await run(`sudo cat "${filepath}"`)).toString().trim();
+    return (run(`sudo cat "${filepath}"`)).toString().trim();
   }
 
   async writeProtectedFile(filepath: string, contents: string) {
     assertNotTouchingFiles(filepath, 'write');
     if (exists(filepath)) {
-      await run(`sudo rm "${filepath}"`);
+      run(`sudo rm "${filepath}"`);
     }
     writeFile(filepath, contents);
-    await run(`sudo chown 0 "${filepath}"`);
-    await run(`sudo chmod 600 "${filepath}"`);
+    run(`sudo chown 0 "${filepath}"`);
+    run(`sudo chmod 600 "${filepath}"`);
   }
 
   private isFirefoxInstalled() {

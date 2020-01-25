@@ -34,7 +34,7 @@ export default async function installCertificateAuthority(options: Options = {},
   ensureConfigDirs();
 
   debug(`Making a temp working directory for files to copied in`);
-  let rootKeyPath = mktmp();
+  const rootKeyPath = mktmp();
 
   debug(`Generating the OpenSSL configuration needed to setup the certificate authority`);
   seedConfigFiles();
@@ -64,10 +64,10 @@ function seedConfigFiles() {
   writeFile(opensslSerialFilePath, '01');
 }
 
-export async function withCertificateAuthorityCredentials(cb: ({ caKeyPath, caCertPath }: { caKeyPath: string, caCertPath: string }) => Promise<void> | void) {
+export async function withCertificateAuthorityCredentials(cb: ({ caKeyPath, caCertPath }: { caKeyPath: string; caCertPath: string }) => Promise<void> | void) {
   debug(`Retrieving devcert's certificate authority credentials`);
-  let tmpCAKeyPath = mktmp();
-  let caKey = await currentPlatform.readProtectedFile(rootCAKeyPath);
+  const tmpCAKeyPath = mktmp();
+  const caKey = await currentPlatform.readProtectedFile(rootCAKeyPath);
   writeFile(tmpCAKeyPath, caKey);
   await cb({ caKeyPath: tmpCAKeyPath, caCertPath: rootCACertPath });
   rm(tmpCAKeyPath);
@@ -75,7 +75,7 @@ export async function withCertificateAuthorityCredentials(cb: ({ caKeyPath, caCe
 
 async function saveCertificateAuthorityCredentials(keypath: string) {
   debug(`Saving devcert's certificate authority credentials`);
-  let key = readFile(keypath, 'utf-8');
+  const key = readFile(keypath, 'utf-8');
   await currentPlatform.writeProtectedFile(rootCAKeyPath, key);
 }
 

@@ -30,11 +30,11 @@ export interface Options /* extends Partial<ICaBufferOpts & ICaPathOpts>  */{
   /** Return the path to the CA certificate? */
   getCaPath?: boolean;
   /** If `certutil` is not installed already (for updating nss databases; e.g. firefox), do not attempt to install it */
-  skipCertutilInstall?: boolean,
+  skipCertutilInstall?: boolean;
   /** Do not update your systems host file with the domain name of the certificate */
-  skipHostsFile?: boolean,
+  skipHostsFile?: boolean;
   /** User interface hooks */
-  ui?: UserInterface
+  ui?: UserInterface;
 }
 
 interface ICaBuffer {
@@ -100,8 +100,8 @@ async function certificateForImpl<O extends Options, CO extends Partial<CertOpti
     throw new Error('OpenSSL not found: OpenSSL is required to generate SSL certificates - make sure it is installed and available in your PATH');
   }
 
-  let domainKeyPath = pathForDomain(commonName, `private-key.key`);
-  let domainCertPath = pathForDomain(commonName, `certificate.crt`);
+  const domainKeyPath = pathForDomain(commonName, `private-key.key`);
+  const domainCertPath = pathForDomain(commonName, `certificate.crt`);
 
   if (!exists(rootCAKeyPath)) {
     debug('Root CA is not installed yet, so it must be our first run. Installing root CA ...');

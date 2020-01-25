@@ -116,19 +116,21 @@ async function sleep(ms: number) {
  */
 export async function openCertificateInFirefox(firefoxPath: string, certPath: string): Promise<void> {
   debug('Adding devert to Firefox trust stores manually. Launching a webserver to host our certificate temporarily ...');
-  let port = await getPort();
-  let server = http.createServer(async (req, res) => {
+  const port = await getPort();
+  const server = http.createServer((req, res) => {
     const { url: reqUrl } = req;
     if (!reqUrl) throw new Error(`Request url was found to be empty: "${JSON.stringify(reqUrl)}"`)
-    let { pathname } = url.parse(reqUrl);
+    const { pathname } = url.parse(reqUrl);
     if (pathname === '/certificate') {
       res.writeHead(200, { 'Content-type': 'application/x-x509-ca-cert' });
       res.write(readFile(certPath));
       res.end();
     } else {
       res.writeHead(200);
-      res.write(await UI.firefoxWizardPromptPage(`http://localhost:${ port }/certificate`));
-      res.end();
+      UI.firefoxWizardPromptPage(`http://localhost:${ port }/certificate`).then(userResponse => {
+        res.write(userResponse);
+        res.end();
+      });
     }
   }).listen(port);
   debug('Certificate server is up. Printing instructions for user and launching Firefox with hosted certificate URL');

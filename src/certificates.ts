@@ -20,17 +20,17 @@ export default async function generateDomainCertificate(commonName: string, alte
   mkdirp(pathForDomain(commonName));
 
   debug(`Generating private key for ${ commonName }`);
-  let domainKeyPath = pathForDomain(commonName, 'private-key.key');
+  const domainKeyPath = pathForDomain(commonName, 'private-key.key');
   generateKey(domainKeyPath);
 
   debug(`Generating certificate signing request for ${ commonName }`);
-  let csrFile = pathForDomain(commonName, `certificate-signing-request.csr`);
+  const csrFile = pathForDomain(commonName, `certificate-signing-request.csr`);
   withDomainSigningRequestConfig(commonName, alternativeNames, (configpath) => {
     openssl(`req -new -config "${ configpath }" -key "${ domainKeyPath }" -out "${ csrFile }" -days ${certOptions.domainCertExpiry}`);
   });
 
   debug(`Generating certificate for ${ commonName } from signing request and signing with root CA`);
-  let domainCertPath = pathForDomain(commonName, `certificate.crt`);
+  const domainCertPath = pathForDomain(commonName, `certificate.crt`);
 
   await withCertificateAuthorityCredentials(({ caKeyPath, caCertPath }) => {
     withDomainCertificateConfig(commonName, alternativeNames, (domainCertConfigPath) => {

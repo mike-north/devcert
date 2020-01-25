@@ -49,7 +49,7 @@ export default class MacOSPlatform implements Platform {
         }
       }
       await closeFirefox();
-      await addCertificateToNSSCertDB(this.FIREFOX_NSS_DIR, certificatePath, getCertUtilPath());
+      addCertificateToNSSCertDB(this.FIREFOX_NSS_DIR, certificatePath, getCertUtilPath());
     } else {
       debug('Firefox does not appear to be installed, skipping Firefox-specific steps...');
     }
@@ -71,7 +71,7 @@ export default class MacOSPlatform implements Platform {
   }
 
   async addDomainToHostFileIfMissing(domain: string) {
-    let hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
+    const hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
     if (!hostsFileContents.includes(domain)) {
       run(`echo '\n127.0.0.1 ${ domain }' | sudo tee -a "${ this.HOST_FILE_PATH }" > /dev/null`);
     }
@@ -84,17 +84,17 @@ export default class MacOSPlatform implements Platform {
 
   async readProtectedFile(filepath: string) {
     assertNotTouchingFiles(filepath, 'read');
-    return (await run(`sudo cat "${filepath}"`)).toString().trim();
+    return (run(`sudo cat "${filepath}"`)).toString().trim();
   }
 
   async writeProtectedFile(filepath: string, contents: string) {
     assertNotTouchingFiles(filepath, 'write');
     if (exists(filepath)) {
-      await run(`sudo rm "${filepath}"`);
+      run(`sudo rm "${filepath}"`);
     }
     writeFile(filepath, contents);
-    await run(`sudo chown 0 "${filepath}"`);
-    await run(`sudo chmod 600 "${filepath}"`);
+    run(`sudo chown 0 "${filepath}"`);
+    run(`sudo chmod 600 "${filepath}"`);
   }
 
   private isFirefoxInstalled() {
@@ -109,4 +109,4 @@ export default class MacOSPlatform implements Platform {
     }
   }
 
-};
+}

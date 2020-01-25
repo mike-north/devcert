@@ -56,7 +56,7 @@ export default class WindowsPlatform implements Platform {
   }
 
   async addDomainToHostFileIfMissing(domain: string) {
-    let hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
+    const hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
     if (!hostsFileContents.includes(domain)) {
       await sudo(`echo 127.0.0.1  ${ domain } >> ${ this.HOST_FILE_PATH }`);
     }
@@ -90,17 +90,17 @@ export default class WindowsPlatform implements Platform {
     if (!encryptionKey) {
       encryptionKey = await UI.getWindowsEncryptionPassword();
     }
-    let encryptedContents = this.encrypt(contents, encryptionKey);
+    const encryptedContents = this.encrypt(contents, encryptionKey);
     write(filepath, encryptedContents);
   }
 
   private encrypt(text: string, key: string) {
-    let cipher = crypto.createCipher('aes256', new Buffer(key));
+    const cipher = crypto.createCipher('aes256', new Buffer(key));
     return cipher.update(text, 'utf8', 'hex') + cipher.final('hex');
   }
 
   private decrypt(encrypted: string, key: string) {
-    let decipher = crypto.createDecipher('aes256', new Buffer(key));
+    const decipher = crypto.createDecipher('aes256', new Buffer(key));
     return decipher.update(encrypted, 'hex', 'utf8') + decipher.final('utf8');
   }
 

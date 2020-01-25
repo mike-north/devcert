@@ -31,20 +31,20 @@ function includeWildcards(list: string[]): string[] {
 }
 
 export function withDomainSigningRequestConfig(commonName: string, alternativeNames: string[], cb: (filepath: string) => void) {
-  let tmpFile = mktmp();
-  let source = readFile(path.join(__dirname, '../openssl-configurations/domain-certificate-signing-requests.conf'), 'utf-8');
-  let template = makeTemplate(source);
-  let result = template({ commonName, altNames: includeWildcards([commonName, ...alternativeNames]) });
+  const tmpFile = mktmp();
+  const source = readFile(path.join(__dirname, '../openssl-configurations/domain-certificate-signing-requests.conf'), 'utf-8');
+  const template = makeTemplate(source);
+  const result = template({ commonName, altNames: includeWildcards([commonName, ...alternativeNames]) });
   writeFile(tmpFile, eol.auto(result));
   cb(tmpFile);
   rm(tmpFile);
 }
 
 export function withDomainCertificateConfig(commonName: string, alternativeNames: string[], cb: (filepath: string) => void) {
-  let tmpFile = mktmp();
-  let source = readFile(path.join(__dirname, '../openssl-configurations/domain-certificates.conf'), 'utf-8');
-  let template = makeTemplate(source);
-  let result = template({
+  const tmpFile = mktmp();
+  const source = readFile(path.join(__dirname, '../openssl-configurations/domain-certificates.conf'), 'utf-8');
+  const template = makeTemplate(source);
+  const result = template({
     commonName, altNames: includeWildcards([commonName, ...alternativeNames]),    serialFile: opensslSerialFilePath,
     databaseFile: opensslDatabaseFilePath,
     domainDir: pathForDomain(commonName)
@@ -69,8 +69,8 @@ export function getLegacyConfigDir(): string {
   if (isWindows && process.env.LOCALAPPDATA) {
     return path.join(process.env.LOCALAPPDATA, 'devcert', 'config');
   } else {
-    let uid = process.getuid && process.getuid();
-    let userHome = (isLinux && uid === 0) ? path.resolve('/usr/local/share') : require('os').homedir();
+    const uid = process.getuid && process.getuid();
+    const userHome = (isLinux && uid === 0) ? path.resolve('/usr/local/share') : require('os').homedir();
     return path.join(userHome, '.config', 'devcert');
   }
 }

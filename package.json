@@ -1,6 +1,6 @@
 {
   "name": "@mike-north/devcert-patched",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Generate trusted local SSL/TLS certificates for local SSL development",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,10 +26,6 @@
   },
   "homepage": "https://github.com/davewasmer/devcert#readme",
   "devDependencies": {
-    "standard-version": "^4.3.0",
-    "typescript": "^2.9.2"
-  },
-  "dependencies": {
     "@types/configstore": "^2.1.1",
     "@types/debug": "^0.0.30",
     "@types/get-port": "^3.2.0",
@@ -39,6 +35,17 @@
     "@types/node": "^8.5.7",
     "@types/rimraf": "^2.0.2",
     "@types/tmp": "^0.0.33",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1",
+    "standard-version": "^4.3.0",
+    "typescript": "^3.3"
+  },
+  "dependencies": {
     "application-config-path": "^0.1.0",
     "command-exists": "^1.2.4",
     "configstore": "^3.0.0",
@@ -51,8 +58,14 @@
     "password-prompt": "^1.0.4",
     "rimraf": "^2.6.2",
     "sudo-prompt": "^8.2.0",
-    "tmp": "^0.0.33",
-    "tslib": "^1.10.0"
+    "tmp": "^0.0.33"
   },
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">= 8.*"
+  },
+  "volta": {
+    "node": "8.17.0",
+    "yarn": "1.21.1"
+  }
 }
