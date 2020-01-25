@@ -6,8 +6,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "lint": "eslint src --ext ts",
     "prepublishOnly": "npm run build",
-    "test": "echo \"Ha.\" && exit 1"
+    "test": "yarn lint"
   },
   "repository": {
     "type": "git",

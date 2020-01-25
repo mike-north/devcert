@@ -1,5 +1,5 @@
-import passwordPrompt from 'password-prompt';
-import { waitForUser } from './utils';
+import passwordPrompt from "password-prompt";
+import { waitForUser } from "./utils";
 
 export interface UserInterface {
   getWindowsEncryptionPassword(): Promise<string>;
@@ -12,7 +12,9 @@ export interface UserInterface {
 
 const DefaultUI: UserInterface = {
   async getWindowsEncryptionPassword() {
-    return await passwordPrompt('devcert password (http://bit.ly/devcert-what-password?):');
+    return await passwordPrompt(
+      "devcert password (http://bit.ly/devcert-what-password?):"
+    );
   },
   async warnChromeOnLinuxWithoutCertutil() {
     console.warn(`
@@ -24,7 +26,7 @@ const DefaultUI: UserInterface = {
     `);
   },
   async closeFirefoxBeforeContinuing() {
-    console.log('Please close Firefox before continuing');
+    console.log("Please close Firefox before continuing");
   },
   async startFirefoxWizard(certificateHost) {
     console.log(`
@@ -37,7 +39,7 @@ const DefaultUI: UserInterface = {
       certificate. When you are finished, come back here and we'll finish up.
 
       (If Firefox doesn't start, go ahead and start it and navigate to
-      ${ certificateHost } in a new tab.)
+      ${certificateHost} in a new tab.)
 
       If you are curious about why all this is necessary, check out
       https://github.com/davewasmer/devcert#how-it-works
@@ -63,9 +65,9 @@ const DefaultUI: UserInterface = {
       certificate, just hit any key here again and we'll wrap up.
 
       <Press any key to continue>
-    `)
+    `);
     await waitForUser();
   }
-}
+};
 
 export default DefaultUI;

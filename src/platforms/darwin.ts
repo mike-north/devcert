@@ -1,22 +1,47 @@
-import path from 'path';
-import { writeFileSync as writeFile, existsSync as exists, readFileSync as read, existsSync } from 'fs';
-import createDebug from 'debug';
-import { sync as commandExists } from 'command-exists';
-import { run } from '../utils';
-import { Options } from '../index';
-import { addCertificateToNSSCertDB, assertNotTouchingFiles, openCertificateInFirefox, closeFirefox, removeCertificateFromNSSCertDB, HOME } from './shared';
-import { Platform } from '.';
+import path from "path";
+import {
+  writeFileSync as writeFile,
+  existsSync as exists,
+  readFileSync as read,
+  existsSync
+} from "fs";
+import createDebug from "debug";
+import { sync as commandExists } from "command-exists";
+import { run } from "../utils";
+import { Options } from "../index";
+import {
+  addCertificateToNSSCertDB,
+  assertNotTouchingFiles,
+  openCertificateInFirefox,
+  closeFirefox,
+  removeCertificateFromNSSCertDB,
+  HOME
+} from "./shared";
+import { Platform } from ".";
 
-const debug = createDebug('devcert:platforms:macos');
+const debug = createDebug("devcert:platforms:macos");
 
-const getCertUtilPath = () => path.join(run('brew --prefix nss').toString().trim(), 'bin', 'certutil');
+const getCertUtilPath = () =>
+  path.join(
+    run("brew --prefix nss")
+      .toString()
+      .trim(),
+    "bin",
+    "certutil"
+  );
 
 export default class MacOSPlatform implements Platform {
-  private FIREFOX_BUNDLE_PATH = '/Applications/Firefox.app';
-  private FIREFOX_BIN_PATH = path.join(this.FIREFOX_BUNDLE_PATH, 'Contents/MacOS/firefox');
-  private FIREFOX_NSS_DIR = path.join(HOME, 'Library/Application Support/Firefox/Profiles/*');
+  private FIREFOX_BUNDLE_PATH = "/Applications/Firefox.app";
+  private FIREFOX_BIN_PATH = path.join(
+    this.FIREFOX_BUNDLE_PATH,
+    "Contents/MacOS/firefox"
+  );
+  private FIREFOX_NSS_DIR = path.join(
+    HOME,
+    "Library/Application Support/Firefox/Profiles/*"
+  );
 
-  private HOST_FILE_PATH = '/etc/hosts';
+  private HOST_FILE_PATH = "/etc/hosts";
 
   /**
    * macOS is pretty simple - just add the certificate to the system keychain,
@@ -25,70 +50,106 @@ export default class MacOSPlatform implements Platform {
    * automatically install the cert with Firefox if we can use certutil via the
    * `nss` Homebrew package, otherwise we go manual with user-facing prompts.
    */
-  async addToTrustStores(certificatePath: string, options: Options = {}): Promise<void> {
-
+  async addToTrustStores(
+    certificatePath: string,
+    options: Options = {}
+  ): Promise<void> {
     // Chrome, Safari, system utils
-    debug('Adding devcert root CA to macOS system keychain');
-    run(`sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain -p ssl -p basic "${ certificatePath }"`);
+    debug("Adding devcert root CA to macOS system keychain");
+    run(
+      `sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain -p ssl -p basic "${certificatePath}"`
+    );
 
     if (this.isFirefoxInstalled()) {
       // Try to use certutil to install the cert automatically
-      debug('Firefox install detected. Adding devcert root CA to Firefox trust store');
+      debug(
+        "Firefox install detected. Adding devcert root CA to Firefox trust store"
+      );
       if (!this.isNSSInstalled()) {
         if (!options.skipCertutilInstall) {
-          if (commandExists('brew')) {
-            debug(`certutil is not already installed, but Homebrew is detected. Trying to install certutil via Homebrew...`);
-            run('brew install nss');
+          if (commandExists("brew")) {
+            debug(
+              `certutil is not already installed, but Homebrew is detected. Trying to install certutil via Homebrew...`
+            );
+            run("brew install nss");
           } else {
-            debug(`Homebrew isn't installed, so we can't try to install certutil. Falling back to manual certificate install`);
-            return await openCertificateInFirefox(this.FIREFOX_BIN_PATH, certificatePath);
+            debug(
+              `Homebrew isn't installed, so we can't try to install certutil. Falling back to manual certificate install`
+            );
+            return await openCertificateInFirefox(
+              this.FIREFOX_BIN_PATH,
+              certificatePath
+            );
           }
         } else {
-          debug(`certutil is not already installed, and skipCertutilInstall is true, so we have to fall back to a manual install`)
-          return await openCertificateInFirefox(this.FIREFOX_BIN_PATH, certificatePath);
+          debug(
+            `certutil is not already installed, and skipCertutilInstall is true, so we have to fall back to a manual install`
+          );
+          return await openCertificateInFirefox(
+            this.FIREFOX_BIN_PATH,
+            certificatePath
+          );
         }
       }
       await closeFirefox();
-      addCertificateToNSSCertDB(this.FIREFOX_NSS_DIR, certificatePath, getCertUtilPath());
+      addCertificateToNSSCertDB(
+        this.FIREFOX_NSS_DIR,
+        certificatePath,
+        getCertUtilPath()
+      );
     } else {
-      debug('Firefox does not appear to be installed, skipping Firefox-specific steps...');
+      debug(
+        "Firefox does not appear to be installed, skipping Firefox-specific steps..."
+      );
     }
   }
-  
+
   removeFromTrustStores(certificatePath: string) {
-    debug('Removing devcert root CA from macOS system keychain');
+    debug("Removing devcert root CA from macOS system keychain");
     try {
       if (existsSync(certificatePath)) {
-        run(`sudo security remove-trusted-cert -d "${ certificatePath }"`);
+        run(`sudo security remove-trusted-cert -d "${certificatePath}"`);
       }
-    } catch(e) {
-      debug(`failed to remove ${ certificatePath } from macOS cert store, continuing. ${ e.toString() }`);
+    } catch (e) {
+      debug(
+        `failed to remove ${certificatePath} from macOS cert store, continuing. ${e.toString()}`
+      );
     }
     if (this.isFirefoxInstalled() && this.isNSSInstalled()) {
-      debug('Firefox install and certutil install detected. Trying to remove root CA from Firefox NSS databases');
-      removeCertificateFromNSSCertDB(this.FIREFOX_NSS_DIR, certificatePath, getCertUtilPath());
+      debug(
+        "Firefox install and certutil install detected. Trying to remove root CA from Firefox NSS databases"
+      );
+      removeCertificateFromNSSCertDB(
+        this.FIREFOX_NSS_DIR,
+        certificatePath,
+        getCertUtilPath()
+      );
     }
   }
 
   async addDomainToHostFileIfMissing(domain: string) {
-    const hostsFileContents = read(this.HOST_FILE_PATH, 'utf8');
+    const hostsFileContents = read(this.HOST_FILE_PATH, "utf8");
     if (!hostsFileContents.includes(domain)) {
-      run(`echo '\n127.0.0.1 ${ domain }' | sudo tee -a "${ this.HOST_FILE_PATH }" > /dev/null`);
+      run(
+        `echo '\n127.0.0.1 ${domain}' | sudo tee -a "${this.HOST_FILE_PATH}" > /dev/null`
+      );
     }
   }
-  
+
   deleteProtectedFiles(filepath: string) {
-    assertNotTouchingFiles(filepath, 'delete');
+    assertNotTouchingFiles(filepath, "delete");
     run(`sudo rm -rf "${filepath}"`);
   }
 
   async readProtectedFile(filepath: string) {
-    assertNotTouchingFiles(filepath, 'read');
-    return (run(`sudo cat "${filepath}"`)).toString().trim();
+    assertNotTouchingFiles(filepath, "read");
+    return run(`sudo cat "${filepath}"`)
+      .toString()
+      .trim();
   }
 
   async writeProtectedFile(filepath: string, contents: string) {
-    assertNotTouchingFiles(filepath, 'write');
+    assertNotTouchingFiles(filepath, "write");
     if (exists(filepath)) {
       run(`sudo rm "${filepath}"`);
     }
@@ -103,10 +164,11 @@ export default class MacOSPlatform implements Platform {
 
   private isNSSInstalled() {
     try {
-      return run('brew list -1').toString().includes('\nnss\n');
+      return run("brew list -1")
+        .toString()
+        .includes("\nnss\n");
     } catch (e) {
       return false;
     }
   }
-
 }

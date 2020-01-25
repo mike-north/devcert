@@ -3,7 +3,7 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-
+    "plugin:prettier/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "parser": "@typescript-eslint/parser",
@@ -12,7 +12,7 @@
   },
 
   "env": { "node": true, "es6": true },
-  "plugins": ["@typescript-eslint", "node"],
+  "plugins": ["@typescript-eslint", "prettier", "node"],
   "rules": {
     "@typescript-eslint/camelcase": 0,
     "@typescript-eslint/no-explicit-any": 0,
