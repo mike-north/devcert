@@ -709,6 +709,11 @@ eslint-config-prettier@^6.10.0:
   dependencies:
     get-stdin "^6.0.0"
 
+eslint-plugin-async-await@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-async-await/-/eslint-plugin-async-await-0.0.0.tgz#0f2ae17a3814780635d48f2409df9e37898ca09f"
+  integrity sha1-DyrhejgUeAY11I8kCd+eN4mMoJ8=
+
 eslint-plugin-es@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-es/-/eslint-plugin-es-3.0.0.tgz#98cb1bc8ab0aa807977855e11ad9d1c9422d014b"
