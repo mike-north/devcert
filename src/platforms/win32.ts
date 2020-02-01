@@ -1,5 +1,5 @@
-import createDebug from "debug";
-import crypto from "crypto";
+import * as createDebug from "debug";
+import * as crypto from "crypto";
 import { writeFileSync as write, readFileSync as read } from "fs";
 import { sync as rimraf } from "rimraf";
 import { Options } from "../index";

@@ -1,21 +1,22 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-      "declaration": true,
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "target": "ES2016",
-      "noImplicitAny": true,
-      "sourceMap": false,
-      "importHelpers": true,
-      "inlineSourceMap": true,
-      "inlineSources": true,
-      "outDir": "dist",
-      "baseUrl": ".",
-      "skipLibCheck": true,
-      "sourceRoot": ".",
-      "strictNullChecks": true,
-      "noUnusedLocals": true,
-      "esModuleInterop": true
-  }
+    "declaration": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2017",
+    "strict": true,
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "sourceRoot": ".",
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "esModuleInterop": false,
+    "paths": {
+      "*": ["types/*"]
+    }
+  },
+  "include": ["src"]
 }

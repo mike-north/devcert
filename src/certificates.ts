@@ -1,5 +1,5 @@
 // import path from 'path';
-import createDebug from "debug";
+import * as createDebug from "debug";
 import { sync as mkdirp } from "mkdirp";
 import { chmodSync as chmod } from "fs";
 import {
@@ -9,7 +9,7 @@ import {
 } from "./constants";
 import { openssl } from "./utils";
 import { withCertificateAuthorityCredentials } from "./certificate-authority";
-import { CertOptions } from "src";
+import { CertOptions } from "./index";
 
 const debug = createDebug("devcert:certificates");
 

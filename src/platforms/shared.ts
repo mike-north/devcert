@@ -1,9 +1,9 @@
-import path from "path";
-import url from "url";
-import createDebug from "debug";
-import assert from "assert";
-import getPort from "get-port";
-import http from "http";
+import * as path from "path";
+import * as url from "url";
+import * as createDebug from "debug";
+import * as assert from "assert";
+import * as getPort from "get-port";
+import * as http from "http";
 import { existsSync } from "fs";
 import { sync as glob } from "glob";
 import { readFileSync as readFile, existsSync as exists } from "fs";

@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/davewasmer/devcert#readme",
   "devDependencies": {
+    "@types/command-exists": "^1.2.0",
     "@types/configstore": "^2.1.1",
     "@types/debug": "^0.0.30",
     "@types/get-port": "^3.2.0",
@@ -44,7 +45,7 @@
     "eslint-plugin-prettier": "^3.1.2",
     "prettier": "^1.19.1",
     "standard-version": "^4.3.0",
-    "typescript": "^3.3"
+    "typescript": "^3.7.5"
   },
   "dependencies": {
     "application-config-path": "^0.1.0",

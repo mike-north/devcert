@@ -1,11 +1,11 @@
-import path from "path";
+import * as path from "path";
 import {
   writeFileSync as writeFile,
   existsSync as exists,
   readFileSync as read,
   existsSync
 } from "fs";
-import createDebug from "debug";
+import * as createDebug from "debug";
 import { sync as commandExists } from "command-exists";
 import { run } from "../utils";
 import { Options } from "../index";
