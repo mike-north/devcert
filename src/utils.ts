@@ -8,7 +8,7 @@ import { configPath } from "./constants";
 
 const debug = createDebug("devcert:util");
 
-export function openssl(cmd: string) {
+export function openssl(cmd: string): string {
   return run(`openssl ${cmd}`, {
     stdio: "pipe",
     env: Object.assign(
@@ -17,28 +17,28 @@ export function openssl(cmd: string) {
       },
       process.env
     )
-  });
+  }).toString();
 }
 
-export function run(cmd: string, options: ExecSyncOptions = {}) {
+export function run(cmd: string, options: ExecSyncOptions = {}): string {
   debug(`exec: \`${cmd}\``);
-  return execSync(cmd, options);
+  return execSync(cmd, options).toString();
 }
 
-export function waitForUser() {
+export function waitForUser(): Promise<void> {
   return new Promise(resolve => {
     process.stdin.resume();
     process.stdin.on("data", resolve);
   });
 }
 
-export function reportableError(message: string) {
+export function reportableError(message: string): Error {
   return new Error(
     `${message} | This is a bug in devcert, please report the issue at https://github.com/davewasmer/devcert/issues`
   );
 }
 
-export function mktmp() {
+export function mktmp(): string {
   // discardDescriptor because windows complains the file is in use if we create a tmp file
   // and then shell out to a process that tries to use it
   return tmp.fileSync({ discardDescriptor: true }).name;

@@ -47,7 +47,7 @@ export default class WindowsPlatform implements Platform {
     }
   }
 
-  removeFromTrustStores(certificatePath: string) {
+  removeFromTrustStores(certificatePath: string): void {
     debug("removing devcert root from Windows OS trust store");
     try {
       console.warn(
@@ -61,14 +61,14 @@ export default class WindowsPlatform implements Platform {
     }
   }
 
-  async addDomainToHostFileIfMissing(domain: string) {
+  async addDomainToHostFileIfMissing(domain: string): Promise<void> {
     const hostsFileContents = read(this.HOST_FILE_PATH, "utf8");
     if (!hostsFileContents.includes(domain)) {
       await sudo(`echo 127.0.0.1  ${domain} >> ${this.HOST_FILE_PATH}`);
     }
   }
 
-  deleteProtectedFiles(filepath: string) {
+  deleteProtectedFiles(filepath: string): void {
     assertNotTouchingFiles(filepath, "delete");
     rimraf(filepath);
   }
@@ -91,7 +91,7 @@ export default class WindowsPlatform implements Platform {
     }
   }
 
-  async writeProtectedFile(filepath: string, contents: string) {
+  async writeProtectedFile(filepath: string, contents: string): Promise<void> {
     assertNotTouchingFiles(filepath, "write");
     if (!encryptionKey) {
       encryptionKey = await UI.getWindowsEncryptionPassword();
@@ -100,12 +100,12 @@ export default class WindowsPlatform implements Platform {
     write(filepath, encryptedContents);
   }
 
-  private encrypt(text: string, key: string) {
+  private encrypt(text: string, key: string): string {
     const cipher = crypto.createCipher("aes256", new Buffer(key));
     return cipher.update(text, "utf8", "hex") + cipher.final("hex");
   }
 
-  private decrypt(encrypted: string, key: string) {
+  private decrypt(encrypted: string, key: string): string {
     const decipher = crypto.createDecipher("aes256", new Buffer(key));
     return decipher.update(encrypted, "hex", "utf8") + decipher.final("utf8");
   }

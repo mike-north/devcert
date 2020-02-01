@@ -33,11 +33,15 @@ export default async function generateDomainCertificate(
 
   debug(`Generating certificate signing request for ${commonName}`);
   const csrFile = pathForDomain(commonName, `certificate-signing-request.csr`);
-  withDomainSigningRequestConfig(commonName, alternativeNames, configpath => {
-    openssl(
-      `req -new -config "${configpath}" -key "${domainKeyPath}" -out "${csrFile}" -days ${certOptions.domainCertExpiry}`
-    );
-  });
+  withDomainSigningRequestConfig(
+    commonName,
+    { alternativeNames },
+    configpath => {
+      openssl(
+        `req -new -config "${configpath}" -key "${domainKeyPath}" -out "${csrFile}" -days ${certOptions.domainCertExpiry}`
+      );
+    }
+  );
 
   debug(
     `Generating certificate for ${commonName} from signing request and signing with root CA`

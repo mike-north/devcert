@@ -44,23 +44,23 @@ export interface Options /* extends Partial<ICaBufferOpts & ICaPathOpts>  */ {
   ui?: UserInterface;
 }
 
-interface ICaBuffer {
+interface CaBuffer {
   ca: Buffer;
 }
-interface ICaPath {
+interface CaPath {
   caPath: string;
 }
-interface IDomainData {
+interface DomainData {
   key: Buffer;
   cert: Buffer;
 }
 type IReturnCa<O extends Options> = O["getCaBuffer"] extends true
-  ? ICaBuffer
+  ? CaBuffer
   : false;
 type IReturnCaPath<O extends Options> = O["getCaPath"] extends true
-  ? ICaPath
+  ? CaPath
   : false;
-type IReturnData<O extends Options = {}> = IDomainData &
+type IReturnData<O extends Options = {}> = DomainData &
   IReturnCa<O> &
   IReturnCaPath<O>;
 
@@ -189,20 +189,20 @@ async function certificateForImpl<
     key: readFile(domainKeyPath),
     cert: readFile(domainCertPath)
   } as IReturnData<O>;
-  if (options.getCaBuffer) (ret as ICaBuffer).ca = readFile(rootCACertPath);
-  if (options.getCaPath) (ret as ICaPath).caPath = rootCACertPath;
+  if (options.getCaBuffer) (ret as CaBuffer).ca = readFile(rootCACertPath);
+  if (options.getCaPath) (ret as CaPath).caPath = rootCACertPath;
 
   return ret;
 }
 
-export function hasCertificateFor(commonName: string) {
+export function hasCertificateFor(commonName: string): boolean {
   return exists(pathForDomain(commonName, `certificate.crt`));
 }
 
-export function configuredDomains() {
+export function configuredDomains(): string[] {
   return readdir(domainsDir);
 }
 
-export function removeDomain(commonName: string) {
-  return rimraf.sync(pathForDomain(commonName));
+export function removeDomain(commonName: string): void {
+  rimraf.sync(pathForDomain(commonName));
 }

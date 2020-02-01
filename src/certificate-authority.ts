@@ -65,7 +65,7 @@ export default async function installCertificateAuthority(
  * Initializes the files OpenSSL needs to sign certificates as a certificate
  * authority, as well as our CA setup version
  */
-function seedConfigFiles() {
+function seedConfigFiles(): void {
   // This is v2 of the devcert certificate authority setup
   writeFile(caVersionFile, "2");
   // OpenSSL CA files
@@ -81,7 +81,7 @@ export async function withCertificateAuthorityCredentials(
     caKeyPath: string;
     caCertPath: string;
   }) => Promise<void> | void
-) {
+): Promise<void> {
   debug(`Retrieving devcert's certificate authority credentials`);
   const tmpCAKeyPath = mktmp();
   const caKey = await currentPlatform.readProtectedFile(rootCAKeyPath);
@@ -90,7 +90,9 @@ export async function withCertificateAuthorityCredentials(
   rm(tmpCAKeyPath);
 }
 
-async function saveCertificateAuthorityCredentials(keypath: string) {
+async function saveCertificateAuthorityCredentials(
+  keypath: string
+): Promise<void> {
   debug(`Saving devcert's certificate authority credentials`);
   const key = readFile(keypath, "utf-8");
   await currentPlatform.writeProtectedFile(rootCAKeyPath, key);

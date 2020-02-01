@@ -104,7 +104,7 @@ export default class LinuxPlatform implements Platform {
     }
   }
 
-  removeFromTrustStores(certificatePath: string) {
+  removeFromTrustStores(certificatePath: string): void {
     try {
       run(`sudo rm /usr/local/share/ca-certificates/devcert.crt`);
       run(`sudo update-ca-certificates`);
@@ -131,7 +131,7 @@ export default class LinuxPlatform implements Platform {
     }
   }
 
-  async addDomainToHostFileIfMissing(domain: string) {
+  addDomainToHostFileIfMissing(domain: string): void {
     const hostsFileContents = read(this.HOST_FILE_PATH, "utf8");
     if (!hostsFileContents.includes(domain)) {
       run(
@@ -140,19 +140,19 @@ export default class LinuxPlatform implements Platform {
     }
   }
 
-  deleteProtectedFiles(filepath: string) {
+  deleteProtectedFiles(filepath: string): void {
     assertNotTouchingFiles(filepath, "delete");
     run(`sudo rm -rf "${filepath}"`);
   }
 
-  async readProtectedFile(filepath: string) {
+  readProtectedFile(filepath: string): string {
     assertNotTouchingFiles(filepath, "read");
     return run(`sudo cat "${filepath}"`)
       .toString()
       .trim();
   }
 
-  async writeProtectedFile(filepath: string, contents: string) {
+  writeProtectedFile(filepath: string, contents: string): void {
     assertNotTouchingFiles(filepath, "write");
     if (exists(filepath)) {
       run(`sudo rm "${filepath}"`);
@@ -162,11 +162,11 @@ export default class LinuxPlatform implements Platform {
     run(`sudo chmod 600 "${filepath}"`);
   }
 
-  private isFirefoxInstalled() {
+  private isFirefoxInstalled(): boolean {
     return exists(this.FIREFOX_BIN_PATH);
   }
 
-  private isChromeInstalled() {
+  private isChromeInstalled(): boolean {
     return exists(this.CHROME_BIN_PATH);
   }
 }

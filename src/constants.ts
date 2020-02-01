@@ -51,9 +51,9 @@ function includeWildcards(list: string[]): string[] {
 
 export function withDomainSigningRequestConfig(
   commonName: string,
-  alternativeNames: string[],
+  { alternativeNames }: { alternativeNames: string[] },
   cb: (filepath: string) => void
-) {
+): void {
   const tmpFile = mktmp();
   const source = readFile(
     path.join(
@@ -76,7 +76,7 @@ export function withDomainCertificateConfig(
   commonName: string,
   alternativeNames: string[],
   cb: (filepath: string) => void
-) {
+): void {
   const tmpFile = mktmp();
   const source = readFile(
     path.join(__dirname, "../openssl-configurations/domain-certificates.conf"),
@@ -123,7 +123,7 @@ export function getLegacyConfigDir(): string {
   }
 }
 
-export function ensureConfigDirs() {
+export function ensureConfigDirs(): void {
   mkdirp(configDir);
   mkdirp(domainsDir);
   mkdirp(rootCADir);

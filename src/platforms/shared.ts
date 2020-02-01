@@ -14,11 +14,13 @@ import { execSync as exec } from "child_process";
 
 const debug = createDebug("devcert:platforms:shared");
 
-export const HOME = process.env.HOME!;
-if (typeof HOME === "undefined")
-  throw new Error(
-    'HOME environment variable was not set. It should be something like "/Users/exampleName"'
-  );
+export const HOME = process.env.HOME
+  ? process.env.HOME
+  : (function(): never {
+      throw new Error(
+        'HOME environment variable was not set. It should be something like "/Users/exampleName"'
+      );
+    })();
 
 /**
  *  Given a directory or glob pattern of directories, run a callback for each db
@@ -113,7 +115,7 @@ export async function closeFirefox(): Promise<void> {
 /**
  * Check if Firefox is currently open
  */
-function isFirefoxOpen() {
+function isFirefoxOpen(): boolean {
   // NOTE: We use some Windows-unfriendly methods here (ps) because Windows
   // never needs to check this, because it doesn't update the NSS DB
   // automaticaly.
@@ -124,7 +126,7 @@ function isFirefoxOpen() {
   return exec("ps aux").indexOf("firefox") > -1;
 }
 
-async function sleep(ms: number) {
+async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -168,12 +170,12 @@ export async function openCertificateInFirefox(
         res.end();
       } else {
         res.writeHead(200);
-        UI.firefoxWizardPromptPage(`http://localhost:${port}/certificate`).then(
-          userResponse => {
-            res.write(userResponse);
-            res.end();
-          }
-        );
+        Promise.resolve(
+          UI.firefoxWizardPromptPage(`http://localhost:${port}/certificate`)
+        ).then(userResponse => {
+          res.write(userResponse);
+          res.end();
+        });
       }
     })
     .listen(port);

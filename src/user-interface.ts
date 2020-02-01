@@ -2,12 +2,12 @@ import passwordPrompt from "password-prompt";
 import { waitForUser } from "./utils";
 
 export interface UserInterface {
-  getWindowsEncryptionPassword(): Promise<string>;
-  warnChromeOnLinuxWithoutCertutil(): Promise<void>;
-  closeFirefoxBeforeContinuing(): Promise<void>;
-  startFirefoxWizard(certificateHost: string): Promise<void>;
-  firefoxWizardPromptPage(certificateURL: string): Promise<string>;
-  waitForFirefoxWizard(): Promise<void>;
+  getWindowsEncryptionPassword(): string | Promise<string>;
+  warnChromeOnLinuxWithoutCertutil(): void | Promise<void>;
+  closeFirefoxBeforeContinuing(): void | Promise<void>;
+  startFirefoxWizard(certificateHost: string): void | Promise<void>;
+  firefoxWizardPromptPage(certificateURL: string): string | Promise<string>;
+  waitForFirefoxWizard(): void | Promise<void>;
 }
 
 const DefaultUI: UserInterface = {
@@ -16,7 +16,7 @@ const DefaultUI: UserInterface = {
       "devcert password (http://bit.ly/devcert-what-password?):"
     );
   },
-  async warnChromeOnLinuxWithoutCertutil() {
+  warnChromeOnLinuxWithoutCertutil() {
     console.warn(`
       WARNING: It looks like you have Chrome installed, but you specified
       'skipCertutilInstall: true'. Unfortunately, without installing
@@ -25,7 +25,7 @@ const DefaultUI: UserInterface = {
       they are untrusted.
     `);
   },
-  async closeFirefoxBeforeContinuing() {
+  closeFirefoxBeforeContinuing() {
     console.log("Please close Firefox before continuing");
   },
   async startFirefoxWizard(certificateHost) {
@@ -48,7 +48,7 @@ const DefaultUI: UserInterface = {
     `);
     await waitForUser();
   },
-  async firefoxWizardPromptPage(certificateURL: string) {
+  firefoxWizardPromptPage(certificateURL: string) {
     return `
       <html>
         <head>

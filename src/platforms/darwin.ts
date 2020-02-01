@@ -21,7 +21,7 @@ import { Platform } from ".";
 
 const debug = createDebug("devcert:platforms:macos");
 
-const getCertUtilPath = () =>
+const getCertUtilPath = (): string =>
   path.join(
     run("brew --prefix nss")
       .toString()
@@ -104,7 +104,7 @@ export default class MacOSPlatform implements Platform {
     }
   }
 
-  removeFromTrustStores(certificatePath: string) {
+  removeFromTrustStores(certificatePath: string): void {
     debug("Removing devcert root CA from macOS system keychain");
     try {
       if (existsSync(certificatePath)) {
@@ -127,7 +127,7 @@ export default class MacOSPlatform implements Platform {
     }
   }
 
-  async addDomainToHostFileIfMissing(domain: string) {
+  addDomainToHostFileIfMissing(domain: string): void {
     const hostsFileContents = read(this.HOST_FILE_PATH, "utf8");
     if (!hostsFileContents.includes(domain)) {
       run(
@@ -136,19 +136,19 @@ export default class MacOSPlatform implements Platform {
     }
   }
 
-  deleteProtectedFiles(filepath: string) {
+  deleteProtectedFiles(filepath: string): void {
     assertNotTouchingFiles(filepath, "delete");
     run(`sudo rm -rf "${filepath}"`);
   }
 
-  async readProtectedFile(filepath: string) {
+  readProtectedFile(filepath: string): string {
     assertNotTouchingFiles(filepath, "read");
     return run(`sudo cat "${filepath}"`)
       .toString()
       .trim();
   }
 
-  async writeProtectedFile(filepath: string, contents: string) {
+  writeProtectedFile(filepath: string, contents: string): void {
     assertNotTouchingFiles(filepath, "write");
     if (exists(filepath)) {
       run(`sudo rm "${filepath}"`);
@@ -158,11 +158,11 @@ export default class MacOSPlatform implements Platform {
     run(`sudo chmod 600 "${filepath}"`);
   }
 
-  private isFirefoxInstalled() {
+  private isFirefoxInstalled(): boolean {
     return exists(this.FIREFOX_BUNDLE_PATH);
   }
 
-  private isNSSInstalled() {
+  private isNSSInstalled(): boolean {
     try {
       return run("brew list -1")
         .toString()
