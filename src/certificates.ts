@@ -1,17 +1,17 @@
 // import path from 'path';
-import * as createDebug from "debug";
-import { sync as mkdirp } from "mkdirp";
-import { chmodSync as chmod } from "fs";
+import * as createDebug from 'debug';
+import { sync as mkdirp } from 'mkdirp';
+import { chmodSync as chmod } from 'fs';
 import {
   pathForDomain,
   withDomainSigningRequestConfig,
   withDomainCertificateConfig
-} from "./constants";
-import { openssl } from "./utils";
-import { withCertificateAuthorityCredentials } from "./certificate-authority";
-import { CertOptions } from "./index";
+} from './constants';
+import { openssl } from './utils';
+import { withCertificateAuthorityCredentials } from './certificate-authority';
+import { CertOptions } from './index';
 
-const debug = createDebug("devcert:certificates");
+const debug = createDebug('devcert:certificates');
 
 /**
  * Generate a domain certificate signed by the devcert root CA. Domain
@@ -28,7 +28,7 @@ export default async function generateDomainCertificate(
   mkdirp(pathForDomain(commonName));
 
   debug(`Generating private key for ${commonName}`);
-  const domainKeyPath = pathForDomain(commonName, "private-key.key");
+  const domainKeyPath = pathForDomain(commonName, 'private-key.key');
   generateKey(domainKeyPath);
 
   debug(`Generating certificate signing request for ${commonName}`);

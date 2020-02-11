@@ -1,19 +1,19 @@
-import { execSync, ExecSyncOptions } from "child_process";
-import * as tmp from "tmp";
-import * as createDebug from "debug";
-import * as path from "path";
-import sudoPrompt from "sudo-prompt";
+import { execSync, ExecSyncOptions } from 'child_process';
+import * as tmp from 'tmp';
+import * as createDebug from 'debug';
+import * as path from 'path';
+import sudoPrompt from 'sudo-prompt';
 
-import { configPath } from "./constants";
+import { configPath } from './constants';
 
-const debug = createDebug("devcert:util");
+const debug = createDebug('devcert:util');
 
 export function openssl(cmd: string): string {
   return run(`openssl ${cmd}`, {
-    stdio: "pipe",
+    stdio: 'pipe',
     env: Object.assign(
       {
-        RANDFILE: path.join(configPath(".rnd"))
+        RANDFILE: path.join(configPath('.rnd'))
       },
       process.env
     )
@@ -28,7 +28,7 @@ export function run(cmd: string, options: ExecSyncOptions = {}): string {
 export function waitForUser(): Promise<void> {
   return new Promise(resolve => {
     process.stdin.resume();
-    process.stdin.on("data", resolve);
+    process.stdin.on('data', resolve);
   });
 }
 
@@ -48,11 +48,11 @@ export function sudo(cmd: string): Promise<string | null> {
   return new Promise((resolve, reject) => {
     sudoPrompt.exec(
       cmd,
-      { name: "devcert" },
+      { name: 'devcert' },
       (err: Error | null, stdout: string | null, stderr: string | null) => {
         const error =
           err ||
-          (typeof stderr === "string" &&
+          (typeof stderr === 'string' &&
             stderr.trim().length > 0 &&
             new Error(stderr));
         error ? reject(error) : resolve(stdout);

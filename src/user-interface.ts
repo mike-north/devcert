@@ -1,5 +1,5 @@
-import passwordPrompt from "password-prompt";
-import { waitForUser } from "./utils";
+import passwordPrompt from 'password-prompt';
+import { waitForUser } from './utils';
 
 export interface UserInterface {
   getWindowsEncryptionPassword(): string | Promise<string>;
@@ -13,7 +13,7 @@ export interface UserInterface {
 const DefaultUI: UserInterface = {
   async getWindowsEncryptionPassword() {
     return await passwordPrompt(
-      "devcert password (http://bit.ly/devcert-what-password?):"
+      'devcert password (http://bit.ly/devcert-what-password?):'
     );
   },
   warnChromeOnLinuxWithoutCertutil() {
@@ -26,7 +26,7 @@ const DefaultUI: UserInterface = {
     `);
   },
   closeFirefoxBeforeContinuing() {
-    console.log("Please close Firefox before continuing");
+    console.log('Please close Firefox before continuing');
   },
   async startFirefoxWizard(certificateHost) {
     console.log(`

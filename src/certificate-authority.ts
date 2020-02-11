@@ -2,8 +2,8 @@ import {
   unlinkSync as rm,
   readFileSync as readFile,
   writeFileSync as writeFile
-} from "fs";
-import * as createDebug from "debug";
+} from 'fs';
+import * as createDebug from 'debug';
 
 import {
   domainsDir,
@@ -16,13 +16,13 @@ import {
   opensslSerialFilePath,
   opensslDatabaseFilePath,
   caVersionFile
-} from "./constants";
-import currentPlatform from "./platforms";
-import { openssl, mktmp } from "./utils";
-import { generateKey } from "./certificates";
-import { Options, CertOptions } from "./index";
+} from './constants';
+import currentPlatform from './platforms';
+import { openssl, mktmp } from './utils';
+import { generateKey } from './certificates';
+import { Options, CertOptions } from './index';
 
-const debug = createDebug("devcert:certificate-authority");
+const debug = createDebug('devcert:certificate-authority');
 
 /**
  * Install the once-per-machine trusted root CA. We'll use this CA to sign
@@ -54,7 +54,7 @@ export default async function installCertificateAuthority(
     `req -new -x509 -config "${caSelfSignConfig}" -key "${rootKeyPath}" -out "${rootCACertPath}" -days ${certOptions.caCertExpiry}`
   );
 
-  debug("Saving certificate authority credentials");
+  debug('Saving certificate authority credentials');
   await saveCertificateAuthorityCredentials(rootKeyPath);
 
   debug(`Adding the root certificate authority to trust stores`);
@@ -67,10 +67,10 @@ export default async function installCertificateAuthority(
  */
 function seedConfigFiles(): void {
   // This is v2 of the devcert certificate authority setup
-  writeFile(caVersionFile, "2");
+  writeFile(caVersionFile, '2');
   // OpenSSL CA files
-  writeFile(opensslDatabaseFilePath, "");
-  writeFile(opensslSerialFilePath, "01");
+  writeFile(opensslDatabaseFilePath, '');
+  writeFile(opensslSerialFilePath, '01');
 }
 
 export async function withCertificateAuthorityCredentials(
@@ -94,14 +94,14 @@ async function saveCertificateAuthorityCredentials(
   keypath: string
 ): Promise<void> {
   debug(`Saving devcert's certificate authority credentials`);
-  const key = readFile(keypath, "utf-8");
+  const key = readFile(keypath, 'utf-8');
   await currentPlatform.writeProtectedFile(rootCAKeyPath, key);
 }
 
 function certErrors(): string {
   try {
     openssl(`x509 -in "${rootCACertPath}" -noout`);
-    return "";
+    return '';
   } catch (e) {
     return e.toString();
   }

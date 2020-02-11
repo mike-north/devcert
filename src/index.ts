@@ -2,10 +2,10 @@ import {
   readFileSync as readFile,
   readdirSync as readdir,
   existsSync as exists
-} from "fs";
-import * as createDebug from "debug";
-import { sync as commandExists } from "command-exists";
-import * as rimraf from "rimraf";
+} from 'fs';
+import * as createDebug from 'debug';
+import { sync as commandExists } from 'command-exists';
+import * as rimraf from 'rimraf';
 import {
   isMac,
   isLinux,
@@ -14,17 +14,17 @@ import {
   domainsDir,
   rootCAKeyPath,
   rootCACertPath
-} from "./constants";
-import currentPlatform from "./platforms";
+} from './constants';
+import currentPlatform from './platforms';
 import installCertificateAuthority, {
   ensureCACertReadable,
   uninstall
-} from "./certificate-authority";
-import generateDomainCertificate from "./certificates";
-import UI, { UserInterface } from "./user-interface";
+} from './certificate-authority';
+import generateDomainCertificate from './certificates';
+import UI, { UserInterface } from './user-interface';
 export { uninstall };
 
-const debug = createDebug("devcert");
+const debug = createDebug('devcert');
 export interface CertOptions {
   /** Number of days before the CA expires */
   caCertExpiry: number;
@@ -54,10 +54,10 @@ interface DomainData {
   key: Buffer;
   cert: Buffer;
 }
-type IReturnCa<O extends Options> = O["getCaBuffer"] extends true
+type IReturnCa<O extends Options> = O['getCaBuffer'] extends true
   ? CaBuffer
   : false;
-type IReturnCaPath<O extends Options> = O["getCaPath"] extends true
+type IReturnCaPath<O extends Options> = O['getCaPath'] extends true
   ? CaPath
   : false;
 type IReturnData<O extends Options = {}> = DomainData &
@@ -151,9 +151,9 @@ async function certificateForImpl<
     throw new Error(`Platform not supported: "${process.platform}"`);
   }
 
-  if (!commandExists("openssl")) {
+  if (!commandExists('openssl')) {
     throw new Error(
-      "OpenSSL not found: OpenSSL is required to generate SSL certificates - make sure it is installed and available in your PATH"
+      'OpenSSL not found: OpenSSL is required to generate SSL certificates - make sure it is installed and available in your PATH'
     );
   }
 
@@ -162,12 +162,12 @@ async function certificateForImpl<
 
   if (!exists(rootCAKeyPath)) {
     debug(
-      "Root CA is not installed yet, so it must be our first run. Installing root CA ..."
+      'Root CA is not installed yet, so it must be our first run. Installing root CA ...'
     );
     await installCertificateAuthority(options, certOptions);
   } else if (options.getCaBuffer || options.getCaPath) {
     debug(
-      "Root CA is not readable, but it probably is because an earlier version of devcert locked it. Trying to fix..."
+      'Root CA is not readable, but it probably is because an earlier version of devcert locked it. Trying to fix...'
     );
     await ensureCACertReadable(options, certOptions);
   }

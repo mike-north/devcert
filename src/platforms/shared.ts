@@ -1,18 +1,18 @@
-import * as path from "path";
-import * as url from "url";
-import * as createDebug from "debug";
-import * as assert from "assert";
-import * as getPort from "get-port";
-import * as http from "http";
-import { existsSync } from "fs";
-import { sync as glob } from "glob";
-import { readFileSync as readFile, existsSync as exists } from "fs";
-import { run } from "../utils";
-import { isMac, isLinux, configDir, getLegacyConfigDir } from "../constants";
-import UI from "../user-interface";
-import { execSync as exec } from "child_process";
+import * as path from 'path';
+import * as url from 'url';
+import * as createDebug from 'debug';
+import * as assert from 'assert';
+import * as getPort from 'get-port';
+import * as http from 'http';
+import { existsSync } from 'fs';
+import { sync as glob } from 'glob';
+import { readFileSync as readFile, existsSync as exists } from 'fs';
+import { run } from '../utils';
+import { isMac, isLinux, configDir, getLegacyConfigDir } from '../constants';
+import UI from '../user-interface';
+import { execSync as exec } from 'child_process';
 
-const debug = createDebug("devcert:platforms:shared");
+const debug = createDebug('devcert:platforms:shared');
 
 export const HOME = process.env.HOME
   ? process.env.HOME
@@ -28,23 +28,23 @@ export const HOME = process.env.HOME
  */
 function doForNSSCertDB(
   nssDirGlob: string,
-  callback: (dir: string, version: "legacy" | "modern") => void
+  callback: (dir: string, version: 'legacy' | 'modern') => void
 ): void {
   glob(nssDirGlob).forEach(potentialNSSDBDir => {
     debug(
       `checking to see if ${potentialNSSDBDir} is a valid NSS database directory`
     );
-    if (exists(path.join(potentialNSSDBDir, "cert8.db"))) {
+    if (exists(path.join(potentialNSSDBDir, 'cert8.db'))) {
       debug(
         `Found legacy NSS database in ${potentialNSSDBDir}, running callback...`
       );
-      callback(potentialNSSDBDir, "legacy");
+      callback(potentialNSSDBDir, 'legacy');
     }
-    if (exists(path.join(potentialNSSDBDir, "cert9.db"))) {
+    if (exists(path.join(potentialNSSDBDir, 'cert9.db'))) {
       debug(
         `Found modern NSS database in ${potentialNSSDBDir}, running callback...`
       );
-      callback(potentialNSSDBDir, "modern");
+      callback(potentialNSSDBDir, 'modern');
     }
   });
 }
@@ -60,7 +60,7 @@ export function addCertificateToNSSCertDB(
 ): void {
   debug(`trying to install certificate into NSS databases in ${nssDirGlob}`);
   doForNSSCertDB(nssDirGlob, (dir, version) => {
-    const dirArg = version === "modern" ? `sql:${dir}` : dir;
+    const dirArg = version === 'modern' ? `sql:${dir}` : dir;
     run(
       `${certutilPath} -A -d "${dirArg}" -t 'C,,' -i "${certPath}" -n devcert`
     );
@@ -77,7 +77,7 @@ export function removeCertificateFromNSSCertDB(
 ): void {
   debug(`trying to remove certificates from NSS databases in ${nssDirGlob}`);
   doForNSSCertDB(nssDirGlob, (dir, version) => {
-    const dirArg = version === "modern" ? `sql:${dir}` : dir;
+    const dirArg = version === 'modern' ? `sql:${dir}` : dir;
     try {
       if (existsSync(certPath)) {
         run(
@@ -121,9 +121,9 @@ function isFirefoxOpen(): boolean {
   // automaticaly.
   assert(
     isMac || isLinux,
-    "checkForOpenFirefox was invoked on a platform other than Mac or Linux"
+    'checkForOpenFirefox was invoked on a platform other than Mac or Linux'
   );
-  return exec("ps aux").indexOf("firefox") > -1;
+  return exec('ps aux').indexOf('firefox') > -1;
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -153,7 +153,7 @@ export async function openCertificateInFirefox(
   certPath: string
 ): Promise<void> {
   debug(
-    "Adding devert to Firefox trust stores manually. Launching a webserver to host our certificate temporarily ..."
+    'Adding devert to Firefox trust stores manually. Launching a webserver to host our certificate temporarily ...'
   );
   const port = await getPort();
   const server = http
@@ -164,8 +164,8 @@ export async function openCertificateInFirefox(
           `Request url was found to be empty: "${JSON.stringify(reqUrl)}"`
         );
       const { pathname } = url.parse(reqUrl);
-      if (pathname === "/certificate") {
-        res.writeHead(200, { "Content-type": "application/x-x509-ca-cert" });
+      if (pathname === '/certificate') {
+        res.writeHead(200, { 'Content-type': 'application/x-x509-ca-cert' });
         res.write(readFile(certPath));
         res.end();
       } else {
@@ -180,7 +180,7 @@ export async function openCertificateInFirefox(
     })
     .listen(port);
   debug(
-    "Certificate server is up. Printing instructions for user and launching Firefox with hosted certificate URL"
+    'Certificate server is up. Printing instructions for user and launching Firefox with hosted certificate URL'
   );
   await UI.startFirefoxWizard(`http://localhost:${port}`);
   run(`${firefoxPath} http://localhost:${port}`);
