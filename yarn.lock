@@ -102,6 +102,13 @@
     "@types/glob" "*"
     "@types/node" "*"
 
+"@types/systeminformation@^3.54.1":
+  version "3.54.1"
+  resolved "https://registry.yarnpkg.com/@types/systeminformation/-/systeminformation-3.54.1.tgz#bbc1b9e4ae2e60d45f75906029c6fb5436e1c5cb"
+  integrity sha512-vvisj2mdWygyc0jk/5XtSVq9gtxCmF3nrGwv8wVway8pwNRhtPji/MU9dc1L0F6rl0F/NFIHa4ScRU7wmNaHmg==
+  dependencies:
+    systeminformation "*"
+
 "@types/tmp@^0.0.33":
   version "0.0.33"
   resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.0.33.tgz#1073c4bc824754ae3d10cfab88ab0237ba964e4d"
@@ -2168,6 +2175,11 @@ supports-color@^5.3.0:
   integrity sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==
   dependencies:
     has-flag "^3.0.0"
+
+systeminformation@*:
+  version "4.21.2"
+  resolved "https://registry.yarnpkg.com/systeminformation/-/systeminformation-4.21.2.tgz#0ee92c0565687a5301ba141444643b43d0370ae2"
+  integrity sha512-7O6laxHTstfj9MSrX77lKLfWz0zqqutWL0+uoJkR7sOOr4XCTwD0QG4shUVCiOWlVX+a8/gHJUio420FrSk8/w==
 
 table@^5.2.3:
   version "5.4.6"
