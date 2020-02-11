@@ -2,7 +2,8 @@ import * as path from "path";
 import {
   existsSync as exists,
   readFileSync as read,
-  writeFileSync as writeFile
+  writeFileSync as writeFile,
+  existsSync
 } from "fs";
 import * as createDebug from "debug";
 import { sync as commandExists } from "command-exists";
@@ -18,8 +19,76 @@ import { run } from "../utils";
 import { Options } from "../index";
 import UI from "../user-interface";
 import { Platform } from ".";
+import * as si from 'systeminformation';
+import { UnreachableError } from "../errors";
 
 const debug = createDebug("devcert:platforms:linux");
+
+enum LinuxFlavor {
+  Unknown = 0,
+  Ubuntu,
+  Rhel7,
+  Fedora,
+}
+
+async function determineLinuxFlavor(distroPromise: Promise<string> = si.osInfo().then(info => info.distro)): Promise<{ flav: LinuxFlavor, message?: string }> {
+  const distro = await distroPromise;
+  switch (distro) {
+    case 'Red Hat Enterprise Linux Workstation':
+      return { flav: LinuxFlavor.Rhel7 };
+    case 'Ubuntu':
+      return { flav: LinuxFlavor.Ubuntu };
+    case 'Fedora':
+      return { flav: LinuxFlavor.Fedora };
+    default:
+      return { flav: LinuxFlavor.Unknown, message: `Unknown linux distro: ${distro}` };
+  }
+}
+
+interface Cmd {
+  command: string;
+  args: string[]
+}
+
+interface LinuxFlavorDetails {
+  caFolders: string[];
+  postCaPlacementCommands: Cmd[]
+  postCaRemovalCommands: Cmd[]
+}
+
+function linuxFlavorDetails(flavor: Exclude<LinuxFlavor, LinuxFlavor.Unknown>): LinuxFlavorDetails {
+  switch (flavor) {
+    case LinuxFlavor.Rhel7:
+    case LinuxFlavor.Fedora:
+      return {
+        caFolders: ['/etc/pki/ca-trust/source/anchors', '/usr/share/pki/ca-trust-source'],
+        postCaPlacementCommands: [{
+          command: 'sudo', args: ['update-ca-trust']
+        }],
+        postCaRemovalCommands: [{
+          command: 'sudo', args: ['update-ca-trust']
+        }]
+      };
+    case LinuxFlavor.Ubuntu:
+      return {
+        caFolders: ['/etc/pki/ca-trust/source/anchors', '/usr/local/share/ca-certificates'],
+        postCaPlacementCommands: [{
+          command: 'sudo', args: ['update-ca-certificates']
+        }],
+        postCaRemovalCommands: [{
+          command: 'sudo', args: ['update-ca-certificates']
+        }]
+      };
+
+    default:
+      throw new UnreachableError(flavor, 'Unable to detect linux flavor');
+  }
+}
+async function currentLinuxFlavorDetails(): Promise<LinuxFlavorDetails> {
+  const { flav: flavor, message } = await determineLinuxFlavor();
+  if (!flavor) throw new Error(message); // TODO better error
+  return linuxFlavorDetails(flavor);
+}
 
 export default class LinuxPlatform implements Platform {
   private FIREFOX_NSS_DIR = path.join(HOME, ".mozilla/firefox/*");
@@ -44,11 +113,17 @@ export default class LinuxPlatform implements Platform {
   ): Promise<void> {
     debug("Adding devcert root CA to Linux system-wide trust stores");
     // run(`sudo cp ${ certificatePath } /etc/ssl/certs/devcert.crt`);
-    run(
-      `sudo cp "${certificatePath}" /usr/local/share/ca-certificates/devcert.crt`
-    );
+    const linuxInfo = await currentLinuxFlavorDetails();
+    const { caFolders, postCaPlacementCommands } = linuxInfo;
+    caFolders.forEach(folder => {
+      run(
+        `sudo cp "${certificatePath}" ${path.join(folder, 'devcert.crt')}`
+      );
+    })
     // run(`sudo bash -c "cat ${ certificatePath } >> /etc/ssl/certs/ca-certificates.crt"`);
-    run(`sudo update-ca-certificates`);
+    postCaPlacementCommands.forEach(({ command, args }) => {
+      run(`${command} ${args.join(' ')}`.trim());
+    })
 
     if (this.isFirefoxInstalled()) {
       // Firefox
@@ -104,15 +179,33 @@ export default class LinuxPlatform implements Platform {
     }
   }
 
-  removeFromTrustStores(certificatePath: string): void {
-    try {
-      run(`sudo rm /usr/local/share/ca-certificates/devcert.crt`);
-      run(`sudo update-ca-certificates`);
-    } catch (e) {
-      debug(
-        `failed to remove ${certificatePath} from /usr/local/share/ca-certificates, continuing. ${e.toString()}`
-      );
-    }
+  async removeFromTrustStores(certificatePath: string): Promise<void> {
+    const linuxInfo = await currentLinuxFlavorDetails();
+    const { caFolders, postCaRemovalCommands } = linuxInfo;
+    caFolders.forEach(folder => {
+      const certPath = path.join(folder, 'devcert.crt');
+      try {
+        const exists = existsSync(certPath);
+        debug({ exists })
+        if (!exists) {
+          debug(`cert at location ${certPath} was not found. Skipping...`)
+          return;
+        } else {
+          run(
+            `sudo rm "${certificatePath}" ${certPath}`
+          );
+          postCaRemovalCommands.forEach(({ command, args }) => {
+            run(`${command} ${args.join(' ')}`.trim());
+          })
+        }
+      } catch (e) {
+        debug(
+          `failed to remove ${certificatePath} from ${certPath}, continuing. ${e.toString()}`
+        );
+      }
+    })
+    // run(`sudo bash -c "cat ${ certificatePath } >> /etc/ssl/certs/ca-certificates.crt"`);
+
     if (commandExists("certutil")) {
       if (this.isFirefoxInstalled()) {
         removeCertificateFromNSSCertDB(
