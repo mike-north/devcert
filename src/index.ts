@@ -22,6 +22,8 @@ import installCertificateAuthority, {
 } from './certificate-authority';
 import generateDomainCertificate from './certificates';
 import UI, { UserInterface } from './user-interface';
+import { openssl } from './utils';
+import * as assert from 'assert';
 export { uninstall };
 
 const debug = createDebug('devcert');
@@ -205,4 +207,20 @@ export function configuredDomains(): string[] {
 
 export function removeDomain(commonName: string): void {
   rimraf.sync(pathForDomain(commonName));
+}
+
+/**
+ *
+ * @param path path to the pem/crt file
+ */
+export function daysToExpireFromToday(path: string): number {
+  if (!exists(path)) {
+    return 0;
+  }
+  let validity = openssl(`x509 -enddate -noout -in ${path}`);
+  validity = validity.replace('notAfter=', '').trim();
+  assert.ok(validity);
+  return Math.round(
+    new Date(validity).getTime() - new Date().getTime() / (1000 * 60 * 60 * 24)
+  );
 }
