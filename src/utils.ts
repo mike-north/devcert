@@ -5,7 +5,7 @@ import * as path from 'path';
 import sudoPrompt from 'sudo-prompt';
 import * as execa from 'execa';
 import * as assert from 'assert';
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 
 import { configPath, domainsDir } from './constants';
 import { existsSync } from 'fs';

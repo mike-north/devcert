@@ -1,6 +1,6 @@
 {
   "name": "@mike-north/devcert-patched",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Generate trusted local SSL/TLS certificates for local SSL development",
   "main": "dist/index.js",
   "types": "dist/devcert-patched.d.ts",
@@ -69,6 +69,7 @@
   "dependencies": {
     "@types/date-fns": "^2.6.0",
     "application-config-path": "^0.1.0",
+    "chalk": "^3.0.0",
     "command-exists": "^1.2.4",
     "configstore": "^3.0.0",
     "date-fns": "^2.10.0",
