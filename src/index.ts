@@ -127,20 +127,6 @@ const DEFAULT_CERT_OPTIONS: CertOptions = {
  * as \{ caPath: string \}
  *
  * @public
- * @param commonName - domain to generate a certificate for
- * @param options - cert generation options
- * @param partialCertOptions - certificate options
- */
-export async function certificateFor<
-  O extends Options,
-  CO extends Partial<CertOptions>
->(
-  commonName: string,
-  options?: O,
-  partialCertOptions?: CO
-): Promise<IReturnData<O>>;
-/**
- * @public
  * @param commonName - common name for certificate
  * @param alternativeNames - alternate names for the certificate
  * @param options - cert generation options
@@ -152,6 +138,19 @@ export async function certificateFor<
 >(
   commonName: string,
   alternativeNames: string[],
+  options?: O,
+  partialCertOptions?: CO
+): Promise<IReturnData<O>>;
+
+/**
+ * {@inheritdoc (certificateFor:1)}
+ * @public
+ */
+export async function certificateFor<
+  O extends Options,
+  CO extends Partial<CertOptions>
+>(
+  commonName: string,
   options?: O,
   partialCertOptions?: CO
 ): Promise<IReturnData<O>>;

@@ -15,14 +15,15 @@ If `options.getCaPath` is true, return value will include the ca certificate pat
 <b>Signature:</b>
 
 ```typescript
-export declare function certificateFor<O extends Options, CO extends Partial<CertOptions>>(commonName: string, options?: O, partialCertOptions?: CO): Promise<IReturnData<O>>;
+export declare function certificateFor<O extends Options, CO extends Partial<CertOptions>>(commonName: string, alternativeNames: string[], options?: O, partialCertOptions?: CO): Promise<IReturnData<O>>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  commonName | <code>string</code> | domain to generate a certificate for |
+|  commonName | <code>string</code> | common name for certificate |
+|  alternativeNames | <code>string[]</code> | alternate names for the certificate |
 |  options | <code>O</code> | cert generation options |
 |  partialCertOptions | <code>CO</code> | certificate options |
 

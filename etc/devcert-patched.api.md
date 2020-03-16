@@ -15,10 +15,10 @@ export interface CaPath {
 }
 
 // @public
-export function certificateFor<O extends Options, CO extends Partial<CertOptions>>(commonName: string, options?: O, partialCertOptions?: CO): Promise<IReturnData<O>>;
-
-// @public (undocumented)
 export function certificateFor<O extends Options, CO extends Partial<CertOptions>>(commonName: string, alternativeNames: string[], options?: O, partialCertOptions?: CO): Promise<IReturnData<O>>;
+
+// @public
+export function certificateFor<O extends Options, CO extends Partial<CertOptions>>(commonName: string, options?: O, partialCertOptions?: CO): Promise<IReturnData<O>>;
 
 // @public
 export interface CertOptions {
