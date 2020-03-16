@@ -35,6 +35,13 @@ export interface DomainData {
     key: Buffer;
 }
 
+// @alpha
+export function getCertExpirationInfo(commonName: string, renewalBufferInBusinessDays?: number): {
+    mustRenew: boolean;
+    renewBy: Date;
+    expireAt: Date;
+};
+
 // @public
 export function hasCertificateFor(commonName: string): boolean;
 
@@ -57,6 +64,9 @@ export interface Options {
 }
 
 // @public
+export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
+
+// @public @deprecated
 export function removeDomain(commonName: string): void;
 
 // @public

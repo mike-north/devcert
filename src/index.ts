@@ -6,7 +6,9 @@
 import {
   readFileSync as readFile,
   readdirSync as readdir,
-  existsSync as exists
+  existsSync as exists,
+  existsSync,
+  statSync
 } from 'fs';
 import * as createDebug from 'debug';
 import { sync as commandExists } from 'command-exists';
@@ -15,7 +17,6 @@ import {
   isMac,
   isLinux,
   isWindows,
-  pathForDomain,
   domainsDir,
   rootCAKeyPath,
   rootCACertPath
@@ -25,12 +26,19 @@ import installCertificateAuthority, {
   ensureCACertReadable,
   uninstall
 } from './certificate-authority';
-import generateDomainCertificate from './certificates';
+import {
+  generateDomainCertificate,
+  revokeDomainCertificate
+} from './certificates';
 import UI, { UserInterface } from './user-interface';
-
+import { pki } from 'node-forge';
+import { subBusinessDays } from 'date-fns';
+import { pathForDomain, keyPathForDomain, certPathForDomain } from './utils';
 export { uninstall, UserInterface };
 
 const debug = createDebug('devcert');
+
+const REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW = 5;
 
 /**
  * Certificate options
@@ -175,6 +183,72 @@ export async function certificateFor<
   }
 }
 
+function getExpireAndRenewalDates(
+  crt: string
+): { expireAt: Date; renewBy: Date } {
+  const expireAt = _getExpireDate(crt);
+  const renewBy = subBusinessDays(
+    expireAt,
+    REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
+  );
+  return { expireAt, renewBy };
+}
+
+function getCertPortionOfPemString(crt: string): string {
+  const beginStr = '-----BEGIN CERTIFICATE-----';
+  const endStr = '-----END CERTIFICATE-----';
+  const begin = crt.indexOf(beginStr);
+  const end = crt.indexOf(endStr);
+  if (begin < 0 || end < 0)
+    throw new Error(
+      `Improperly formatted PEM file. Expected to find ${beginStr} and ${endStr}
+"${crt}"`
+    );
+
+  const certContent = crt.substr(begin, end - begin + endStr.length);
+  return certContent;
+}
+
+function _getExpireDate(crt: string): Date {
+  const certInfo = pki.certificateFromPem(crt);
+  const { notAfter } = certInfo.validity;
+  return notAfter;
+}
+
+function shouldRenew(crt: string): boolean {
+  const now = new Date();
+  const { expireAt, renewBy } = getExpireAndRenewalDates(crt);
+  debug(
+    `evaluating cert renewal\n- now:\t${now.toDateString()}\n- renew at:\t${renewBy.toDateString()}\n- expire at:\t${expireAt.toDateString()}`
+  );
+  return now.valueOf() >= renewBy.valueOf();
+}
+
+/**
+ * Get the expiration and recommended renewal dates, for the latest issued
+ * cert for a given common_name
+ *
+ * @alpha
+ * @param commonName - common_name of cert whose expiration info is desired
+ * @param renewalBufferInBusinessDays - number of business days before cert expiration, to start indicating that it should be renewed
+ */
+export function getCertExpirationInfo(
+  commonName: string,
+  renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
+): { mustRenew: boolean; renewBy: Date; expireAt: Date } {
+  const domainCertPath = pathForDomain(commonName, `certificate.crt`);
+  if (!exists(domainCertPath))
+    throw new Error(`cert for ${commonName} was not found`);
+  const domainCert = readFile(domainCertPath).toString();
+  if (!domainCert) {
+    throw new Error(`No certificate for ${commonName} exists`);
+  }
+  const crt = getCertPortionOfPemString(domainCert);
+  const { expireAt, renewBy } = getExpireAndRenewalDates(crt);
+  const mustRenew = shouldRenew(crt);
+  return { mustRenew, expireAt, renewBy };
+}
+
 async function certificateForImpl<
   O extends Options,
   CO extends Partial<CertOptions>
@@ -207,8 +281,8 @@ async function certificateForImpl<
     );
   }
 
-  const domainKeyPath = pathForDomain(commonName, `private-key.key`);
-  const domainCertPath = pathForDomain(commonName, `certificate.crt`);
+  const domainKeyPath = keyPathForDomain(commonName);
+  const domainCertPath = certPathForDomain(commonName);
 
   if (!exists(rootCAKeyPath)) {
     debug(
@@ -222,11 +296,31 @@ async function certificateForImpl<
     await ensureCACertReadable(options, certOptions);
   }
 
-  if (!exists(pathForDomain(commonName, `certificate.crt`))) {
+  if (!exists(domainCertPath)) {
     debug(
       `Can't find certificate file for ${commonName}, so it must be the first request for ${commonName}. Generating and caching ...`
     );
     await generateDomainCertificate(commonName, alternativeNames, certOptions);
+  } else {
+    const certContents = getCertPortionOfPemString(
+      readFile(domainCertPath).toString()
+    );
+    const expireDate = _getExpireDate(certContents);
+    if (shouldRenew(certContents)) {
+      debug(
+        `Certificate for ${commonName} was close to expiring (on ${expireDate.toDateString()}). A fresh certificate will be generated for you`
+      );
+      await removeAndRevokeDomainCert(commonName);
+      await generateDomainCertificate(
+        commonName,
+        alternativeNames,
+        certOptions
+      );
+    } else {
+      debug(
+        `Certificate for ${commonName} was not close to expiring (on ${expireDate.toDateString()}).`
+      );
+    }
   }
 
   if (!options.skipHostsFile) {
@@ -267,7 +361,38 @@ export function configuredDomains(): string[] {
  * Remove a certificate
  * @public
  * @param commonName - commonName of cert to remove
+ * @deprecated please use {@link removeAndRevokeDomainCert | removeAndRevokeDomainCert} to ensure that the OpenSSL cert removal is handled properly
  */
 export function removeDomain(commonName: string): void {
   rimraf.sync(pathForDomain(commonName));
+}
+
+/**
+ * Remove a certificate and revoke it from the OpenSSL cert database
+ * @public
+ * @param commonName - commonName of cert to remove
+ */
+export async function removeAndRevokeDomainCert(
+  commonName: string
+): Promise<void> {
+  debug(`removing domain certificate for ${commonName}`);
+  const certFolderPath = pathForDomain(commonName);
+  const domainCertPath = certPathForDomain(commonName);
+  if (existsSync(certFolderPath)) {
+    debug(`cert found on disk for ${commonName}`);
+    // revoke the cert
+    debug(`revoking cert ${commonName}`);
+    await revokeDomainCertificate(commonName);
+    // delete the cert file
+    debug(
+      `deleting cert on disk for ${commonName} - ${
+        statSync(domainCertPath).size
+      }`
+    );
+    removeDomain(commonName);
+    debug(
+      `deleted cert on disk for ${commonName} - ${existsSync(domainCertPath)}`
+    );
+  } else debug(`cert not found on disk ${commonName}`);
+  debug(`completed removing domain certificate for ${commonName}`);
 }
