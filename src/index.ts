@@ -224,8 +224,17 @@ function shouldRenew(crt: string): boolean {
   return now.valueOf() >= renewBy.valueOf();
 }
 
+/**
+ * Get the expiration and recommended renewal dates, for the latest issued
+ * cert for a given common_name
+ *
+ * @alpha
+ * @param commonName - common_name of cert whose expiration info is desired
+ * @param renewalBufferInBusinessDays - number of business days before cert expiration, to start indicating that it should be renewed
+ */
 export function getCertExpirationInfo(
-  commonName: string
+  commonName: string,
+  renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
 ): { mustRenew: boolean; renewBy: Date; expireAt: Date } {
   const domainCertPath = pathForDomain(commonName, `certificate.crt`);
   if (!exists(domainCertPath))

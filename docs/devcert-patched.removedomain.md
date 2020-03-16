@@ -4,6 +4,11 @@
 
 ## removeDomain() function
 
+> Warning: This API is now obsolete.
+> 
+> please use [removeAndRevokeDomainCert](./devcert-patched.removeandrevokedomaincert.md) to ensure that the OpenSSL cert removal is handled properly
+> 
+
 Remove a certificate
 
 <b>Signature:</b>
