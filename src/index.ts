@@ -184,13 +184,11 @@ export async function certificateFor<
 }
 
 function getExpireAndRenewalDates(
-  crt: string
+  crt: string,
+  renewalBufferInBusinessDays: number
 ): { expireAt: Date; renewBy: Date } {
   const expireAt = _getExpireDate(crt);
-  const renewBy = subBusinessDays(
-    expireAt,
-    REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
-  );
+  const renewBy = subBusinessDays(expireAt, renewalBufferInBusinessDays);
   return { expireAt, renewBy };
 }
 
@@ -215,9 +213,15 @@ function _getExpireDate(crt: string): Date {
   return notAfter;
 }
 
-function shouldRenew(crt: string): boolean {
+function shouldRenew(
+  crt: string,
+  renewalBufferInBusinessDays: number
+): boolean {
   const now = new Date();
-  const { expireAt, renewBy } = getExpireAndRenewalDates(crt);
+  const { expireAt, renewBy } = getExpireAndRenewalDates(
+    crt,
+    renewalBufferInBusinessDays
+  );
   debug(
     `evaluating cert renewal\n- now:\t${now.toDateString()}\n- renew at:\t${renewBy.toDateString()}\n- expire at:\t${expireAt.toDateString()}`
   );
@@ -244,8 +248,11 @@ export function getCertExpirationInfo(
     throw new Error(`No certificate for ${commonName} exists`);
   }
   const crt = getCertPortionOfPemString(domainCert);
-  const { expireAt, renewBy } = getExpireAndRenewalDates(crt);
-  const mustRenew = shouldRenew(crt);
+  const { expireAt, renewBy } = getExpireAndRenewalDates(
+    crt,
+    renewalBufferInBusinessDays
+  );
+  const mustRenew = shouldRenew(crt, renewalBufferInBusinessDays);
   return { mustRenew, expireAt, renewBy };
 }
 
@@ -306,7 +313,9 @@ async function certificateForImpl<
       readFile(domainCertPath).toString()
     );
     const expireDate = _getExpireDate(certContents);
-    if (shouldRenew(certContents)) {
+    if (
+      shouldRenew(certContents, REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW)
+    ) {
       debug(
         `Certificate for ${commonName} was close to expiring (on ${expireDate.toDateString()}). A fresh certificate will be generated for you`
       );
