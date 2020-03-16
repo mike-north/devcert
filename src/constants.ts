@@ -1,15 +1,17 @@
 import * as path from 'path';
 import {
-  unlinkSync as rm,
   writeFileSync as writeFile,
-  readFileSync as readFile
+  readFileSync as readFile,
+  unlinkSync
 } from 'fs';
 import { sync as mkdirp } from 'mkdirp';
 import { template as makeTemplate } from 'lodash';
 import * as eol from 'eol';
-import { mktmp } from './utils';
+import { tmpDir, pathForDomain } from './utils';
 import applicationConfigPath = require('application-config-path');
+import * as _createDebug from 'debug';
 
+const debug = _createDebug('devcert:constants');
 // Platform shortcuts
 export const isMac = process.platform === 'darwin';
 export const isLinux = process.platform === 'linux';
@@ -23,10 +25,6 @@ export const configPath: (...pathSegments: string[]) => string = path.join.bind(
 );
 
 export const domainsDir = configPath('domains');
-export const pathForDomain: (
-  domain: string,
-  ...pathSegments: string[]
-) => string = path.join.bind(path, domainsDir);
 
 export const caVersionFile = configPath('devcert-ca-version');
 export const opensslSerialFilePath = configPath(
@@ -49,12 +47,16 @@ function includeWildcards(list: string[]): string[] {
   }, [] as string[]);
 }
 
-export function withDomainSigningRequestConfig(
+export async function withDomainSigningRequestConfig(
   commonName: string,
   { alternativeNames }: { alternativeNames: string[] },
-  cb: (filepath: string) => void
-): void {
-  const tmpFile = mktmp();
+  cb: (filepath: string) => Promise<void> | void
+): Promise<void> {
+  const tmp = tmpDir();
+  const tmpFile = path.join(
+    tmp.name,
+    'domain-certificate-signing-requests.conf'
+  );
   const source = readFile(
     path.join(
       __dirname,
@@ -68,16 +70,18 @@ export function withDomainSigningRequestConfig(
     altNames: includeWildcards([commonName, ...alternativeNames])
   });
   writeFile(tmpFile, eol.auto(result));
-  cb(tmpFile);
-  rm(tmpFile);
+  await cb(tmpFile);
+  unlinkSync(tmpFile);
+  tmp.removeCallback();
 }
 
-export function withDomainCertificateConfig(
+export async function withDomainCertificateConfig(
   commonName: string,
   alternativeNames: string[],
-  cb: (filepath: string) => void
-): void {
-  const tmpFile = mktmp();
+  cb: (filepath: string) => Promise<void> | void
+): Promise<void> {
+  const tmp = tmpDir();
+  const tmpFile = path.join(tmp.name, 'ca.cfg');
   const source = readFile(
     path.join(__dirname, '../openssl-configurations/domain-certificates.conf'),
     'utf-8'
@@ -91,8 +95,9 @@ export function withDomainCertificateConfig(
     domainDir: pathForDomain(commonName)
   });
   writeFile(tmpFile, eol.auto(result));
-  cb(tmpFile);
-  rm(tmpFile);
+  await cb(tmpFile);
+  unlinkSync(tmpFile);
+  tmp.removeCallback();
 }
 
 // confTemplate = confTemplate.replace(/DATABASE_PATH/, configPath('index.txt').replace(/\\/g, '\\\\'));
@@ -100,14 +105,12 @@ export function withDomainCertificateConfig(
 // confTemplate = eol.auto(confTemplate);
 
 export const rootCADir = configPath('certificate-authority');
-export const rootCAKeyPath = configPath(
-  'certificate-authority',
-  'private-key.key'
-);
-export const rootCACertPath = configPath(
-  'certificate-authority',
-  'certificate.cert'
-);
+export const rootCAKeyPath = path.join(rootCADir, 'private-key.key');
+export const rootCACertPath = path.join(rootCADir, 'certificate.cert');
+
+debug('rootCACertPath', rootCACertPath);
+debug('rootCAKeyPath', rootCAKeyPath);
+debug('rootCADir', rootCADir);
 
 // Exposed for uninstallation purposes.
 export function getLegacyConfigDir(): string {

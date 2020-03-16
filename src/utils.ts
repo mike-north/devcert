@@ -3,25 +3,33 @@ import * as tmp from 'tmp';
 import * as createDebug from 'debug';
 import * as path from 'path';
 import sudoPrompt from 'sudo-prompt';
+import * as execa from 'execa';
+import * as assert from 'assert';
+import chalk from 'chalk';
 
-import { configPath } from './constants';
+import { configPath, domainsDir } from './constants';
+import { existsSync } from 'fs';
 
 const debug = createDebug('devcert:util');
 
-export function openssl(cmd: string): string {
-  return run(`openssl ${cmd}`, {
-    stdio: 'pipe',
-    env: Object.assign(
-      {
-        RANDFILE: path.join(configPath('.rnd'))
-      },
-      process.env
-    )
-  }).toString();
+export function openssl(cmd: string, description: string): string {
+  try {
+    return run(`openssl ${cmd}`, {
+      stdio: 'pipe',
+      env: Object.assign(
+        {
+          RANDFILE: path.join(configPath('.rnd'))
+        },
+        process.env
+      )
+    }).toString();
+  } catch (err) {
+    throw new Error(`OpenSSL errored while performing: ${description}\n${err}`);
+  }
 }
 
 export function run(cmd: string, options: ExecSyncOptions = {}): string {
-  debug(`exec: \`${cmd}\``);
+  debug(`exec: ${chalk.yellowBright(cmd)}`);
   return execSync(cmd, options).toString();
 }
 
@@ -38,10 +46,10 @@ export function reportableError(message: string): Error {
   );
 }
 
-export function mktmp(): string {
+export function tmpDir(): tmp.SynchrounousResult {
   // discardDescriptor because windows complains the file is in use if we create a tmp file
   // and then shell out to a process that tries to use it
-  return tmp.fileSync({ discardDescriptor: true }).name;
+  return tmp.dirSync({ discardDescriptor: true });
 }
 
 export function sudo(cmd: string): Promise<string | null> {
@@ -59,4 +67,43 @@ export function sudo(cmd: string): Promise<string | null> {
       }
     );
   });
+}
+
+export function hasSudo(): boolean {
+  try {
+    execa.shellSync('sudo -n true');
+    return true;
+  } catch (e) {
+    if (!(e && e.stderr.trim() === 'sudo: a password is required'))
+      throw new Error(
+        `Unexpected error while trying to detect sudo elevation: ${e}`
+      );
+    return false;
+  }
+}
+export function pathForDomain(
+  domain: string,
+  ...pathSegments: string[]
+): string {
+  assert(typeof domainsDir === 'string', 'domainsDir must be a string');
+  assert(domainsDir.length > 0, 'domainsDir must be > 0 length');
+  return path.join(domainsDir, domain, ...pathSegments);
+}
+
+export function certPathForDomain(commonName: string): string {
+  assert(typeof commonName === 'string', 'commonName must be a string');
+  assert(commonName.length > 0, 'commonName must be > 0 length');
+  return pathForDomain(commonName, `certificate.crt`);
+}
+
+export function keyPathForDomain(commonName: string): string {
+  assert(typeof commonName === 'string', 'commonName must be a string');
+  assert(commonName.length > 0, 'commonName must be > 0 length');
+  return pathForDomain(commonName, `private-key.key`);
+}
+
+export function hasCertificateFor(commonName: string): boolean {
+  assert(typeof commonName === 'string', 'commonName must be a string');
+  assert(commonName.length > 0, 'commonName must be > 0 length');
+  return existsSync(certPathForDomain(commonName));
 }

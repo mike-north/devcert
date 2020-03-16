@@ -1,7 +1,7 @@
 import {
-  unlinkSync as rm,
   readFileSync as readFile,
-  writeFileSync as writeFile
+  writeFileSync as writeFile,
+  unlinkSync
 } from 'fs';
 import * as createDebug from 'debug';
 
@@ -18,9 +18,10 @@ import {
   caVersionFile
 } from './constants';
 import currentPlatform from './platforms';
-import { openssl, mktmp } from './utils';
+import { openssl, tmpDir } from './utils';
 import { generateKey } from './certificates';
 import { Options, CertOptions } from './index';
+import { join } from 'path';
 
 const debug = createDebug('devcert:certificate-authority');
 
@@ -38,8 +39,9 @@ export default async function installCertificateAuthority(
   uninstall();
   ensureConfigDirs();
 
+  const tmp = tmpDir();
   debug(`Making a temp working directory for files to copied in`);
-  const rootKeyPath = mktmp();
+  const rootKeyPath = join(tmp.name, 'ca.key');
 
   debug(
     `Generating the OpenSSL configuration needed to setup the certificate authority`
@@ -51,7 +53,8 @@ export default async function installCertificateAuthority(
 
   debug(`Generating a CA certificate`);
   openssl(
-    `req -new -x509 -config "${caSelfSignConfig}" -key "${rootKeyPath}" -out "${rootCACertPath}" -days ${certOptions.caCertExpiry}`
+    `req -new -x509 -config "${caSelfSignConfig}" -key "${rootKeyPath}" -out "${rootCACertPath}" -days ${certOptions.caCertExpiry}`,
+    'generating CA CSR'
   );
 
   debug('Saving certificate authority credentials');
@@ -83,11 +86,17 @@ export async function withCertificateAuthorityCredentials(
   }) => Promise<void> | void
 ): Promise<void> {
   debug(`Retrieving devcert's certificate authority credentials`);
-  const tmpCAKeyPath = mktmp();
+  const tmp = tmpDir();
+  const caKeyPath = join(tmp.name, 'ca.key');
+  const caCertPath = join(caKeyPath, '..', 'ca.crt');
   const caKey = await currentPlatform.readProtectedFile(rootCAKeyPath);
-  writeFile(tmpCAKeyPath, caKey);
-  await cb({ caKeyPath: tmpCAKeyPath, caCertPath: rootCACertPath });
-  rm(tmpCAKeyPath);
+  const caCrt = await currentPlatform.readProtectedFile(rootCACertPath);
+  writeFile(caKeyPath, caKey);
+  writeFile(caCertPath, caCrt);
+  await cb({ caKeyPath, caCertPath });
+  unlinkSync(caKeyPath);
+  unlinkSync(caCertPath);
+  tmp.removeCallback();
 }
 
 async function saveCertificateAuthorityCredentials(
@@ -100,7 +109,10 @@ async function saveCertificateAuthorityCredentials(
 
 function certErrors(): string {
   try {
-    openssl(`x509 -in "${rootCACertPath}" -noout`);
+    openssl(
+      `x509 -in "${rootCACertPath}" -noout`,
+      'checking for certificate errors'
+    );
     return '';
   } catch (e) {
     return e.toString();
