@@ -18,6 +18,7 @@ export interface Options
 |  --- | --- | --- |
 |  [getCaBuffer](./devcert-patched.options.getcabuffer.md) | <code>boolean</code> | Return the CA certificate data? |
 |  [getCaPath](./devcert-patched.options.getcapath.md) | <code>boolean</code> | Return the path to the CA certificate? |
+|  [renewalBufferInBusinessDays](./devcert-patched.options.renewalbufferinbusinessdays.md) | <code>number</code> | Number of business days before domain cert expiry before automatic revoke and renew |
 |  [skipCertutilInstall](./devcert-patched.options.skipcertutilinstall.md) | <code>boolean</code> | If <code>certutil</code> is not installed already (for updating nss databases; e.g. firefox), do not attempt to install it |
 |  [skipHostsFile](./devcert-patched.options.skiphostsfile.md) | <code>boolean</code> | Do not update your systems host file with the domain name of the certificate |
 |  [ui](./devcert-patched.options.ui.md) | <code>UserInterface</code> | User interface hooks |

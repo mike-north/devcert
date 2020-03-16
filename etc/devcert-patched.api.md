@@ -58,6 +58,7 @@ export type IReturnData<O extends Options = {}> = DomainData & IReturnCa<O> & IR
 export interface Options {
     getCaBuffer?: boolean;
     getCaPath?: boolean;
+    renewalBufferInBusinessDays?: number;
     skipCertutilInstall?: boolean;
     skipHostsFile?: boolean;
     ui?: UserInterface;

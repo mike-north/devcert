@@ -66,6 +66,8 @@ export interface Options /* extends Partial<ICaBufferOpts & ICaPathOpts>  */ {
   skipHostsFile?: boolean;
   /** User interface hooks */
   ui?: UserInterface;
+  /** Number of business days before domain cert expiry before automatic revoke and renew */
+  renewalBufferInBusinessDays?: number;
 }
 /**
  * The CA public key as a buffer
@@ -314,7 +316,11 @@ async function certificateForImpl<
     );
     const expireDate = _getExpireDate(certContents);
     if (
-      shouldRenew(certContents, REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW)
+      shouldRenew(
+        certContents,
+        options.renewalBufferInBusinessDays ??
+          REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
+      )
     ) {
       debug(
         `Certificate for ${commonName} was close to expiring (on ${expireDate.toDateString()}). A fresh certificate will be generated for you`
