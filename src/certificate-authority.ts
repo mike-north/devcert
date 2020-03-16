@@ -158,6 +158,8 @@ export async function ensureCACertReadable(
  * It's also possible that the command to untrust will not work, and we'll
  * silently fail that as well; with no existing certificates anymore, the
  * security exposure there is minimal.
+ *
+ * @public
  */
 export function uninstall(): void {
   currentPlatform.removeFromTrustStores(rootCACertPath);

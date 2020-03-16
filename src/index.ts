@@ -1,3 +1,8 @@
+/**
+ * @packageDocumentation
+ * Utilities for safely generating locally-trusted and machine-specific X.509 certificates for local development
+ */
+
 import {
   readFileSync as readFile,
   readdirSync as readdir,
@@ -22,15 +27,26 @@ import installCertificateAuthority, {
 } from './certificate-authority';
 import generateDomainCertificate from './certificates';
 import UI, { UserInterface } from './user-interface';
-export { uninstall };
+
+export { uninstall, UserInterface };
 
 const debug = createDebug('devcert');
+
+/**
+ * Certificate options
+ * @public
+ */
 export interface CertOptions {
   /** Number of days before the CA expires */
   caCertExpiry: number;
   /** Number of days before the domain certificate expires */
   domainCertExpiry: number;
 }
+/**
+ * Cert generation options
+ *
+ * @public
+ */
 export interface Options /* extends Partial<ICaBufferOpts & ICaPathOpts>  */ {
   /** Return the CA certificate data? */
   getCaBuffer?: boolean;
@@ -43,24 +59,51 @@ export interface Options /* extends Partial<ICaBufferOpts & ICaPathOpts>  */ {
   /** User interface hooks */
   ui?: UserInterface;
 }
-
-interface CaBuffer {
+/**
+ * The CA public key as a buffer
+ * @public
+ */
+export interface CaBuffer {
+  /** CA public key */
   ca: Buffer;
 }
-interface CaPath {
+/**
+ * The cert authority's path on disk
+ * @public
+ */
+export interface CaPath {
+  /** CA cert path on disk */
   caPath: string;
 }
-interface DomainData {
+/**
+ * Domain cert public and private keys as buffers
+ * @public
+ */
+export interface DomainData {
+  /** private key */
   key: Buffer;
+  /** public key (cert) */
   cert: Buffer;
 }
-type IReturnCa<O extends Options> = O['getCaBuffer'] extends true
+/**
+ * A return value containing the CA public key
+ * @public
+ */
+export type IReturnCa<O extends Options> = O['getCaBuffer'] extends true
   ? CaBuffer
   : false;
-type IReturnCaPath<O extends Options> = O['getCaPath'] extends true
+/**
+ * A return value containing the CA path on disk
+ * @public
+ */
+export type IReturnCaPath<O extends Options> = O['getCaPath'] extends true
   ? CaPath
   : false;
-type IReturnData<O extends Options = {}> = DomainData &
+/**
+ * A return value containing the CA public key, CA path on disk, and domain cert info
+ * @public
+ */
+export type IReturnData<O extends Options = {}> = DomainData &
   IReturnCa<O> &
   IReturnCaPath<O>;
 
@@ -77,24 +120,32 @@ const DEFAULT_CERT_OPTIONS: CertOptions = {
  * If this is the first time devcert is being run on this machine, it will
  * generate and attempt to install a root certificate authority.
  *
- * Returns a promise that resolves with { key, cert }, where `key` and `cert`
- * are Buffers with the contents of the certificate private key and certificate
- * file, respectively
- *
  * If `options.getCaBuffer` is true, return value will include the ca certificate data
- * as { ca: Buffer }
+ * as \{ ca: Buffer \}
  *
  * If `options.getCaPath` is true, return value will include the ca certificate path
- * as { caPath: string }
+ * as \{ caPath: string \}
+ *
+ * @public
+ * @param commonName - domain to generate a certificate for
+ * @param options - cert generation options
+ * @param partialCertOptions - certificate options
  */
 export async function certificateFor<
   O extends Options,
   CO extends Partial<CertOptions>
 >(
-  domain: string,
+  commonName: string,
   options?: O,
   partialCertOptions?: CO
 ): Promise<IReturnData<O>>;
+/**
+ * @public
+ * @param commonName - common name for certificate
+ * @param alternativeNames - alternate names for the certificate
+ * @param options - cert generation options
+ * @param partialCertOptions - certificate options
+ */
 export async function certificateFor<
   O extends Options,
   CO extends Partial<CertOptions>
@@ -195,14 +246,29 @@ async function certificateForImpl<
   return ret;
 }
 
+/**
+ * Check whether a certificate with a given common_name has been installed
+ *
+ * @public
+ * @param commonName - commonName of certificate whose existence is being checked
+ */
 export function hasCertificateFor(commonName: string): boolean {
   return exists(pathForDomain(commonName, `certificate.crt`));
 }
 
+/**
+ * Get a list of domains that certifiates have been generated for
+ * @alpha
+ */
 export function configuredDomains(): string[] {
   return readdir(domainsDir);
 }
 
+/**
+ * Remove a certificate
+ * @public
+ * @param commonName - commonName of cert to remove
+ */
 export function removeDomain(commonName: string): void {
   rimraf.sync(pathForDomain(commonName));
 }
