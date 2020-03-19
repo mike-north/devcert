@@ -88,14 +88,10 @@ export async function withCertificateAuthorityCredentials(
   debug(`Retrieving devcert's certificate authority credentials`);
   const tmp = tmpDir();
   const caKeyPath = join(tmp.name, 'ca.key');
-  const caCertPath = join(caKeyPath, '..', 'ca.crt');
   const caKey = await currentPlatform.readProtectedFile(rootCAKeyPath);
-  const caCrt = await currentPlatform.readProtectedFile(rootCACertPath);
   writeFile(caKeyPath, caKey);
-  writeFile(caCertPath, caCrt);
-  await cb({ caKeyPath, caCertPath });
+  await cb({ caKeyPath, caCertPath: rootCACertPath });
   unlinkSync(caKeyPath);
-  unlinkSync(caCertPath);
   tmp.removeCallback();
 }
 
