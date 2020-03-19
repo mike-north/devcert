@@ -11,16 +11,11 @@ import { run } from '../utils';
 import { isMac, isLinux, configDir, getLegacyConfigDir } from '../constants';
 import UI from '../user-interface';
 import { execSync as exec } from 'child_process';
+import { homedir } from 'os';
 
 const debug = createDebug('devcert:platforms:shared');
 
-export const HOME = process.env.HOME
-  ? process.env.HOME
-  : (function(): never {
-      throw new Error(
-        'HOME environment variable was not set. It should be something like "/Users/exampleName"'
-      );
-    })();
+export const HOME = process.env.HOME ?? homedir();
 
 /**
  *  Given a directory or glob pattern of directories, run a callback for each db
