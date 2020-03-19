@@ -1,4 +1,5 @@
-import passwordPrompt from 'password-prompt';
+// Note that ES6 modules cannot directly export class objects.
+import prompt = require('password-prompt');
 import { waitForUser } from './utils';
 
 /**
@@ -22,7 +23,7 @@ export interface UserInterface {
 
 const DefaultUI: UserInterface = {
   async getWindowsEncryptionPassword() {
-    return await passwordPrompt(
+    return await prompt(
       'devcert password (http://bit.ly/devcert-what-password?):'
     );
   },
