@@ -15,6 +15,19 @@ export interface CaPath {
 }
 
 // @public
+export interface CertExpirationInfo {
+    businessDaysBuffer: number;
+    expireAt: Date;
+    freshness: CertFreshnessState;
+    // @deprecated (undocumented)
+    mustRenew: boolean;
+    renewBy: Date;
+}
+
+// @public
+export type CertFreshnessState = 'fresh' | 'expiring' | 'expired';
+
+// @public
 export function certificateFor<O extends Options, CO extends Partial<CertOptions>>(commonName: string, alternativeNames: string[], options?: O, partialCertOptions?: CO): Promise<IReturnData<O>>;
 
 // @public
@@ -36,11 +49,12 @@ export interface DomainData {
 }
 
 // @alpha
-export function getCertExpirationInfo(commonName: string, renewalBufferInBusinessDays?: number): {
-    mustRenew: boolean;
-    renewBy: Date;
-    expireAt: Date;
-};
+export function getCertExpirationInfo(commonName: string, renewalBufferInBusinessDays?: number): CertExpirationInfo;
+
+// Warning: (tsdoc-undefined-tag) The TSDoc tag "@private" is not defined in this configuration
+//
+// @internal
+export function _getCertExpirationInfoData(subjectName: string, businessDaysBuffer: number | undefined, now: Date, fetchCertExpirationInfo?: typeof getCertExpirationInfo): CertExpirationInfo;
 
 // @public
 export function hasCertificateFor(commonName: string): boolean;

@@ -5,12 +5,14 @@
   "main": "dist/index.js",
   "types": "dist/devcert-patched.d.ts",
   "scripts": {
+    "pretest": "yarn build:tests",
+    "test": "yarn lint && qunit test-js/**/*.test.js",
+    "build:tests": "tsc -b test",
     "clean": "rimraf dist",
     "build": "yarn clean && yarn build:ts && yarn build:api-extract && yarn build:api-docs",
     "build:ts": "tsc",
     "lint": "eslint src --ext ts",
     "prepublishOnly": "yarn build",
-    "test": "yarn lint",
     "build:api-docs": "yarn api-documenter markdown -i ./temp -o ./docs",
     "build:api-extract": "yarn api-extractor run"
   },
@@ -52,6 +54,7 @@
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^8.5.7",
     "@types/node-forge": "^0.9.2",
+    "@types/qunit": "^2.9.1",
     "@types/rimraf": "^2.0.2",
     "@types/systeminformation": "^3.54.1",
     "@types/tmp": "^0.0.33",
@@ -63,6 +66,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
     "prettier": "^1.19.1",
+    "qunit": "^2.10.0",
     "standard-version": "^4.3.0",
     "typescript": "^3.7.5"
   },

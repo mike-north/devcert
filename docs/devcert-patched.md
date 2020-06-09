@@ -12,6 +12,7 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 |  --- | --- |
 |  [certificateFor(commonName, alternativeNames, options, partialCertOptions)](./devcert-patched.certificatefor.md) | Request an SSL certificate for the given app name signed by the devcert root certificate authority. If devcert has previously generated a certificate for that app name on this machine, it will reuse that certificate.<!-- -->If this is the first time devcert is being run on this machine, it will generate and attempt to install a root certificate authority.<!-- -->If <code>options.getCaBuffer</code> is true, return value will include the ca certificate data as { ca: Buffer }<!-- -->If <code>options.getCaPath</code> is true, return value will include the ca certificate path as { caPath: string } |
 |  [certificateFor(commonName, options, partialCertOptions)](./devcert-patched.certificatefor_1.md) | Request an SSL certificate for the given app name signed by the devcert root certificate authority. If devcert has previously generated a certificate for that app name on this machine, it will reuse that certificate.<!-- -->If this is the first time devcert is being run on this machine, it will generate and attempt to install a root certificate authority.<!-- -->If <code>options.getCaBuffer</code> is true, return value will include the ca certificate data as { ca: Buffer }<!-- -->If <code>options.getCaPath</code> is true, return value will include the ca certificate path as { caPath: string } |
+|  [getCertExpirationInfoData(subjectName, businessDaysBuffer, now, fetchCertExpirationInfo)](./devcert-patched.getcertexpirationinfodata.md) | Retrieve a certificate by Subject Name and return its expiration state and expiration date |
 |  [hasCertificateFor(commonName)](./devcert-patched.hascertificatefor.md) | Check whether a certificate with a given common\_name has been installed |
 |  [removeAndRevokeDomainCert(commonName)](./devcert-patched.removeandrevokedomaincert.md) | Remove a certificate and revoke it from the OpenSSL cert database |
 |  [removeDomain(commonName)](./devcert-patched.removedomain.md) | Remove a certificate |
@@ -23,6 +24,7 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 |  --- | --- |
 |  [CaBuffer](./devcert-patched.cabuffer.md) | The CA public key as a buffer |
 |  [CaPath](./devcert-patched.capath.md) | The cert authority's path on disk |
+|  [CertExpirationInfo](./devcert-patched.certexpirationinfo.md) | Certificate expiration information based on the cert expiration date and a renewal window based in business days |
 |  [CertOptions](./devcert-patched.certoptions.md) | Certificate options |
 |  [DomainData](./devcert-patched.domaindata.md) | Domain cert public and private keys as buffers |
 |  [Options](./devcert-patched.options.md) | Cert generation options |
@@ -32,6 +34,7 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 
 |  Type Alias | Description |
 |  --- | --- |
+|  [CertFreshnessState](./devcert-patched.certfreshnessstate.md) | Get the certificate expiration state |
 |  [IReturnCa](./devcert-patched.ireturnca.md) | A return value containing the CA public key |
 |  [IReturnCaPath](./devcert-patched.ireturncapath.md) | A return value containing the CA path on disk |
 |  [IReturnData](./devcert-patched.ireturndata.md) | A return value containing the CA public key, CA path on disk, and domain cert info |
