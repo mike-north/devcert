@@ -231,6 +231,84 @@ function shouldRenew(
 }
 
 /**
+ * Get the certificate expiration state
+ * @public
+ */
+export type CertFreshnessState = 'fresh' | 'expiring' | 'expired';
+
+function getFreshness(
+  now: Date,
+  expireAt: Date,
+  mustRenew: boolean
+): CertFreshnessState {
+  if (now > expireAt) return 'expired';
+  if (mustRenew) return 'expiring';
+  return 'fresh';
+}
+
+/**
+ * Retrieve a certificate by Subject Name and return its expiration
+ * state and expiration date
+ *
+ * @param subjectName - Certificate Subject Name
+ * @param now - Current time
+ *
+ * @private
+ * @internal
+ */
+export function _getCertExpirationInfoData(
+  subjectName: string,
+  businessDaysBuffer = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
+  now: Date,
+  fetchCertExpirationInfo = getCertExpirationInfo
+): CertExpirationInfo {
+  const { mustRenew, expireAt, renewBy } = fetchCertExpirationInfo(
+    subjectName,
+    businessDaysBuffer
+  );
+  return {
+    freshness: getFreshness(now, expireAt, mustRenew),
+    expireAt,
+    mustRenew,
+    businessDaysBuffer,
+    renewBy
+  };
+}
+
+/**
+ * Certificate expiration information based on
+ * the cert expiration date and a renewal window
+ * based in business days
+ * @public
+ */
+export interface CertExpirationInfo {
+  /**
+   * Number of business days before cert expiry before we consider a cert to
+   * be "expiring"
+   */
+  businessDaysBuffer: number;
+  /**
+   * @deprecated Please use `freshness` instead
+   */
+  mustRenew: boolean;
+  /**
+   * An indication of whether a certificate is expiring, already expired, or
+   * suitable for use ("fresh")
+   */
+  freshness: CertFreshnessState;
+  /**
+   * The date at which a given certificate will be deemed to be "expiring soon"
+   * at which point it should be automatically renewed
+   */
+  renewBy: Date;
+  /**
+   * The date at which a given cert will _expire_ at which point it will not
+   * be suitable for use
+   */
+  expireAt: Date;
+}
+
+/**
  * Get the expiration and recommended renewal dates, for the latest issued
  * cert for a given common_name
  *
@@ -241,7 +319,7 @@ function shouldRenew(
 export function getCertExpirationInfo(
   commonName: string,
   renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
-): { mustRenew: boolean; renewBy: Date; expireAt: Date } {
+): CertExpirationInfo {
   const domainCertPath = pathForDomain(commonName, `certificate.crt`);
   if (!exists(domainCertPath))
     throw new Error(`cert for ${commonName} was not found`);
@@ -255,7 +333,18 @@ export function getCertExpirationInfo(
     renewalBufferInBusinessDays
   );
   const mustRenew = shouldRenew(crt, renewalBufferInBusinessDays);
-  return { mustRenew, expireAt, renewBy };
+  const { freshness } = _getCertExpirationInfoData(
+    commonName,
+    renewalBufferInBusinessDays,
+    new Date()
+  );
+  return {
+    mustRenew,
+    expireAt,
+    renewBy,
+    freshness,
+    businessDaysBuffer: renewalBufferInBusinessDays
+  };
 }
 
 async function certificateForImpl<
