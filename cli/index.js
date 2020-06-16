@@ -1,9 +1,9 @@
-import * as _createDebug from 'debug';
-import * as yargs from 'yargs';
-import addRemoteCommand from './commands/remote';
+const yargs = require('yargs');
+const addRemoteCommand = require('./commands/remote');
 
-export function main(_args: string[]): void {
-  let program: yargs.Argv<{}> = yargs
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function main(_args) {
+  let program = yargs
     .parserConfiguration({
       'strip-dashed': true,
       'strip-aliased': true

@@ -1,9 +1,8 @@
-import * as yargs from 'yargs';
-import { rootCACertPath } from '../../src/constants';
-import express = require('express');
-import * as fs from 'fs';
+const { rootCACertPath } = require('../../dist/constants');
+const express = require('express');
+const fs = require('fs');
 
-function addCleanCommand(y: yargs.Argv<{}>): yargs.Argv<{}> {
+function addCleanCommand(y) {
   return y.command('remote', 'connect to remote server', {}, argv => {
     const app = express();
     const port = argv.port;
