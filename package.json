@@ -14,6 +14,9 @@
     "build:api-docs": "yarn api-documenter markdown -i ./temp -o ./docs",
     "build:api-extract": "yarn api-extractor run"
   },
+  "bin": {
+    "devcert": "bin/devcert.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mike-north/devcert.git"
@@ -83,6 +86,7 @@
     "debug": "^3.1.0",
     "eol": "^0.9.1",
     "execa": "0.9.0",
+    "express": "^4.17.1",
     "get-port": "^3.2.0",
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
