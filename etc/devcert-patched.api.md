@@ -71,7 +71,13 @@ export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
 export function removeDomain(commonName: string): void;
 
 // @public
+export function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+
+// @public
 export function uninstall(): void;
+
+// @public
+export function untrustMachine(filePath: string): void;
 
 // @public
 export interface UserInterface {

@@ -5,14 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/devcert-patched.d.ts",
   "scripts": {
-    "pretest": "yarn build:tests",
-    "test": "yarn lint && qunit test-js/**/*.test.js",
-    "build:tests": "tsc -b test",
     "clean": "rimraf dist",
     "build": "yarn clean && yarn build:ts && yarn build:api-extract && yarn build:api-docs",
     "build:ts": "tsc",
     "lint": "eslint src --ext ts",
     "prepublishOnly": "yarn build",
+    "test": "yarn lint",
     "build:api-docs": "yarn api-documenter markdown -i ./temp -o ./docs",
     "build:api-extract": "yarn api-extractor run"
   },

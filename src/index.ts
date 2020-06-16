@@ -359,13 +359,13 @@ async function certificateForImpl<
 }
 
 /**
- *
- * @param hostname Trust the certificate for a given hostname and port and add
+ * Trust the certificate for a given hostname and port and add
  * the returned cert to the local trust store.
- * @param port
- * @param certPath
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
  */
-export async function trustCertsOnRemote(
+async function trustCertsOnRemote(
   hostname: string,
   port: number,
   certPath: string
@@ -392,10 +392,11 @@ export async function trustCertsOnRemote(
  * Trust the remote hosts's certificate on local machine.
  * This function would ssh into the remote host, get the certificate
  * and trust the local machine from where this function is getting called from.
- * @param hostname
- * @param port
- * @param certPath
- * @param options
+ * @public
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ * @param renewalBufferInBusinessDays - valid days before renewing the cert
  */
 export function trustRemoteMachine(
   hostname: string,
@@ -452,7 +453,8 @@ export function trustRemoteMachine(
 
 /**
  * Untrust the certificate for a given file path.
- * @param filePath
+ * @public
+ * @param filePath - file path of the cert
  */
 export function untrustMachine(filePath: string): void {
   currentPlatform.removeFromTrustStores(filePath);
