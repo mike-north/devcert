@@ -5,12 +5,14 @@
   "main": "dist/index.js",
   "types": "dist/devcert-patched.d.ts",
   "scripts": {
+    "pretest": "yarn build:tests",
+    "test": "yarn lint && qunit test-js/**/*.test.js",
+    "build:tests": "tsc -b test",
     "clean": "rimraf dist",
     "build": "yarn clean && yarn build:ts && yarn build:api-extract && yarn build:api-docs",
     "build:ts": "tsc",
     "lint": "eslint src --ext ts",
     "prepublishOnly": "yarn build",
-    "test": "yarn lint",
     "build:api-docs": "yarn api-documenter markdown -i ./temp -o ./docs",
     "build:api-extract": "yarn api-extractor run"
   },
@@ -51,10 +53,13 @@
     "@types/lodash": "^4.14.92",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^8.5.7",
+    "@types/node-fetch": "^2.5.7",
     "@types/node-forge": "^0.9.2",
+    "@types/qunit": "^2.9.1",
     "@types/rimraf": "^2.0.2",
     "@types/systeminformation": "^3.54.1",
     "@types/tmp": "^0.0.33",
+    "@types/yargs": "^15.0.5",
     "@typescript-eslint/eslint-plugin": "^2.17.0",
     "@typescript-eslint/parser": "^2.17.0",
     "eslint": "^6.8.0",
@@ -62,12 +67,16 @@
     "eslint-plugin-async-await": "^0.0.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
+    "node-fetch": "^2.6.0",
     "prettier": "^1.19.1",
+    "qunit": "^2.10.0",
     "standard-version": "^4.3.0",
+    "tcp-port-used": "^1.0.1",
     "typescript": "^3.7.5"
   },
   "dependencies": {
     "@types/date-fns": "^2.6.0",
+    "@types/express": "^4.17.6",
     "application-config-path": "^0.1.0",
     "chalk": "^3.0.0",
     "command-exists": "^1.2.4",
@@ -85,7 +94,8 @@
     "rimraf": "^3.0.2",
     "sudo-prompt": "^8.2.0",
     "systeminformation": "^4.21.2",
-    "tmp": "^0.0.33"
+    "tmp": "^0.0.33",
+    "yargs": "^15.3.1"
   },
   "optionalDependencies": {},
   "engines": {

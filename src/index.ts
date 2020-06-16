@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  * @packageDocumentation
  * Utilities for safely generating locally-trusted and machine-specific X.509 certificates for local development
@@ -8,8 +9,10 @@ import {
   readdirSync as readdir,
   existsSync as exists,
   existsSync,
+  writeFileSync,
   statSync
 } from 'fs';
+import * as execa from 'execa';
 import * as createDebug from 'debug';
 import { sync as commandExists } from 'command-exists';
 import * as rimraf from 'rimraf';
@@ -31,11 +34,11 @@ import {
   revokeDomainCertificate
 } from './certificates';
 import UI, { UserInterface } from './user-interface';
+import { getRemoteCertificate, closeRemoteServer } from './remote-utils';
 import { pki } from 'node-forge';
 import { subBusinessDays } from 'date-fns';
 import { pathForDomain, keyPathForDomain, certPathForDomain } from './utils';
 export { uninstall, UserInterface };
-
 const debug = createDebug('devcert');
 
 const REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW = 5;
@@ -348,10 +351,111 @@ async function certificateForImpl<
     key: readFile(domainKeyPath),
     cert: readFile(domainCertPath)
   } as IReturnData<O>;
-  if (options.getCaBuffer) (ret as CaBuffer).ca = readFile(rootCACertPath);
-  if (options.getCaPath) (ret as CaPath).caPath = rootCACertPath;
+  if (options.getCaBuffer)
+    ((ret as unknown) as CaBuffer).ca = readFile(rootCACertPath);
+  if (options.getCaPath) ((ret as unknown) as CaPath).caPath = rootCACertPath;
 
   return ret;
+}
+
+/**
+ *
+ * @param hostname Trust the certificate for a given hostname and port and add
+ * the returned cert to the local trust store.
+ * @param port
+ * @param certPath
+ */
+export async function trustCertsOnRemote(
+  hostname: string,
+  port: number,
+  certPath: string
+): Promise<string> {
+  // Get the remote certificate from the server
+  const certData = await getRemoteCertificate(hostname, port);
+  try {
+    // Write the certificate data on this file.
+    writeFileSync(certPath, certData);
+  } catch (err) {
+    throw new Error(err);
+  }
+  // Trust the remote cert on your local box
+  try {
+    await currentPlatform.addToTrustStores(certPath);
+    debug('Certificate trusted successfully');
+    debug('Attempting to close the remote server');
+  } catch (err) {
+    throw new Error(err);
+  }
+  return certData;
+}
+/**
+ * Trust the remote hosts's certificate on local machine.
+ * This function would ssh into the remote host, get the certificate
+ * and trust the local machine from where this function is getting called from.
+ * @param hostname
+ * @param port
+ * @param certPath
+ * @param options
+ */
+export function trustRemoteMachine(
+  hostname: string,
+  port: number,
+  certPath: string,
+  renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
+): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    debug(`Connecting to remote server on port: ${port}`);
+    // Connect to remote box via ssh.
+    const child = execa.shell(
+      // @TODO Change this to npx
+      `ssh ${hostname} node devcert/src/express.js --port=${port} `,
+      {
+        detached: false
+      }
+    );
+
+    // Throw any error that might have occurred on the remote side.
+    if (child && child.stderr) {
+      child.stderr.on('data', (err: execa.StdIOOption) => {
+        throw new Error(err?.toString());
+      });
+    }
+    if (child && child.stdout) {
+      child.stdout.on('data', async (data: execa.StdIOOption) => {
+        debug('Connected to remote server successfully');
+        const stdoutData = data?.toString().trimRight();
+        if (stdoutData?.includes(`Server started at port: ${port}`)) {
+          // Trust the certs
+          const certData = await trustCertsOnRemote(hostname, port, certPath);
+          // Once certs are trusted, close the remote server and cleanup.
+          try {
+            const remoteServer = await closeRemoteServer(hostname, port);
+            debug(remoteServer);
+            const crt = getCertPortionOfPemString(certData);
+            const mustRenew = shouldRenew(crt, renewalBufferInBusinessDays);
+            // return the certificate renewal state to the consumer to handle the
+            // renewal usecase.
+            resolve(mustRenew);
+          } catch (err) {
+            throw new Error(err);
+          }
+          child.kill();
+        } else if (stdoutData?.includes('Process terminated')) {
+          debug('Remote server closed successfully');
+        }
+      });
+    } else {
+      reject('Error executing shell command');
+    }
+  });
+}
+
+/**
+ * Untrust the certificate for a given file path.
+ * @param filePath
+ */
+export function untrustMachine(filePath: string): void {
+  currentPlatform.removeFromTrustStores(filePath);
 }
 
 /**
