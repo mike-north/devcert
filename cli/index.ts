@@ -14,10 +14,6 @@ export function main(_args: string[]): void {
   program
     .help()
     .showHelpOnFail(true)
-    .command('*', false, {}, () => {
-      program.showHelp();
-      program.exit(1, new Error('unrecognized command'));
-    })
-    .demandCommand(1, 'you must specify which command to invoke')
+    .demandCommand(3, 'you must specify which command to invoke')
     .wrap(null).argv;
 }
