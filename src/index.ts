@@ -409,7 +409,7 @@ export function trustRemoteMachine(
     // Connect to remote box via ssh.
     const child = execa.shell(
       // @TODO Change this to npx
-      `ssh ${hostname} node devcert/src/express.js --port=${port} `,
+      `ssh ${hostname} npx mike-north/devcert#suchita/remote-connect remote --port=${port} `,
       {
         detached: false
       }
