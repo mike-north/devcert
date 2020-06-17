@@ -1,0 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class UnreachableError extends Error {
+    constructor(nvr, message) {
+        super(`You have encountered a situation that was thought to be impossible\n${message}\nThis value should have been a "never": ${nvr}`);
+    }
+}
+exports.UnreachableError = UnreachableError;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZXJyb3JzLmpzIiwic291cmNlUm9vdCI6Ii4vIiwic291cmNlcyI6WyJlcnJvcnMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFBQSxNQUFhLGdCQUFpQixTQUFRLEtBQUs7SUFDekMsWUFBWSxHQUFVLEVBQUUsT0FBZTtRQUNyQyxLQUFLLENBQ0gsdUVBQXVFLE9BQU8sNENBQTRDLEdBQUcsRUFBRSxDQUNoSSxDQUFDO0lBQ0osQ0FBQztDQUNGO0FBTkQsNENBTUMiLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgY2xhc3MgVW5yZWFjaGFibGVFcnJvciBleHRlbmRzIEVycm9yIHtcbiAgY29uc3RydWN0b3IobnZyOiBuZXZlciwgbWVzc2FnZTogc3RyaW5nKSB7XG4gICAgc3VwZXIoXG4gICAgICBgWW91IGhhdmUgZW5jb3VudGVyZWQgYSBzaXR1YXRpb24gdGhhdCB3YXMgdGhvdWdodCB0byBiZSBpbXBvc3NpYmxlXFxuJHttZXNzYWdlfVxcblRoaXMgdmFsdWUgc2hvdWxkIGhhdmUgYmVlbiBhIFwibmV2ZXJcIjogJHtudnJ9YFxuICAgICk7XG4gIH1cbn1cbiJdfQ==
