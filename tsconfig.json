@@ -18,5 +18,5 @@
       "*": ["types/*"]
     }
   },
-  "include": ["src"]
+  "include": ["cli", "src"]
 }
