@@ -63,6 +63,13 @@ export declare interface CertOptions {
 }
 
 /**
+ * Closes the remote server
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ */
+declare function closeRemoteServer(hostname: string, port: number): Promise<string>;
+
+/**
  * Get a list of domains that certifiates have been generated for
  * @alpha
  */
@@ -92,6 +99,13 @@ export declare function getCertExpirationInfo(commonName: string, renewalBufferI
     renewBy: Date;
     expireAt: Date;
 };
+
+/**
+ * Returns the remote box's certificate
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ */
+declare function getRemoteCertificate(hostname: string, port: number): Promise<string>;
 
 /**
  * Check whether a certificate with a given common_name has been installed
@@ -155,6 +169,17 @@ export declare function removeAndRevokeDomainCert(commonName: string): Promise<v
 export declare function removeDomain(commonName: string): void;
 
 /**
+ * Trust the certificate for a given hostname and port and add
+ * the returned cert to the local trust store.
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ */
+declare function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate, closeRemoteFunc?: typeof closeRemoteServer): Promise<{
+    mustRenew: boolean;
+}>;
+
+/**
  * Trust the remote hosts's certificate on local machine.
  * This function would ssh into the remote host, get the certificate
  * and trust the local machine from where this function is getting called from.
@@ -165,6 +190,19 @@ export declare function removeDomain(commonName: string): void;
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
  */
 export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+
+/**
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
+ * @param closeRemoteFunc - function that closes the remote machine connection.
+ *
+ * @private
+ * @internal
+ */
+export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
 
 /**
  * Remove as much of the devcert files and state as we can. This is necessary

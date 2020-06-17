@@ -368,25 +368,28 @@ async function certificateForImpl<
 async function trustCertsOnRemote(
   hostname: string,
   port: number,
-  certPath: string
-): Promise<string> {
+  certPath: string,
+  renewalBufferInBusinessDays: number,
+  getRemoteCertsFunc = getRemoteCertificate,
+  closeRemoteFunc = closeRemoteServer
+): Promise<{ mustRenew: boolean }> {
   // Get the remote certificate from the server
-  const certData = await getRemoteCertificate(hostname, port);
+  let mustRenew = false;
   try {
+    const certData = await getRemoteCertsFunc(hostname, port);
+    mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
     // Write the certificate data on this file.
     writeFileSync(certPath, certData);
-  } catch (err) {
-    throw new Error(err);
-  }
-  // Trust the remote cert on your local box
-  try {
+
+    // Trust the remote cert on your local box
     await currentPlatform.addToTrustStores(certPath);
     debug('Certificate trusted successfully');
     debug('Attempting to close the remote server');
   } catch (err) {
+    closeRemoteFunc(hostname, port);
     throw new Error(err);
   }
-  return certData;
+  return { mustRenew };
 }
 /**
  * Trust the remote hosts's certificate on local machine.
@@ -417,23 +420,28 @@ export function trustRemoteMachine(
 
     // Throw any error that might have occurred on the remote side.
     if (child && child.stderr) {
-      child.stderr.on('data', (err: execa.StdIOOption) => {
-        throw new Error(err?.toString());
+      child.stderr.on('data', (data: execa.StdIOOption) => {
+        const stdErrData = data?.toString().trimRight();
+        if (stdErrData?.toLowerCase().includes('error')) {
+          closeRemoteServer(hostname, port);
+          throw new Error(stdErrData);
+        }
       });
     }
+    // Listen to the stdout stream and determine the appropriate steps.
     if (child && child.stdout) {
       child.stdout.on('data', async (data: execa.StdIOOption) => {
         debug('Connected to remote server successfully');
         const stdoutData = data?.toString().trimRight();
         if (stdoutData?.includes(`Server started at port: ${port}`)) {
-          // Trust the certs
-          const certData = await trustCertsOnRemote(hostname, port, certPath);
           // Once certs are trusted, close the remote server and cleanup.
           try {
-            const remoteServer = await closeRemoteServer(hostname, port);
-            debug(remoteServer);
-            const crt = getCertPortionOfPemString(certData);
-            const mustRenew = shouldRenew(crt, renewalBufferInBusinessDays);
+            const mustRenew = await _trustRemoteMachine(
+              hostname,
+              port,
+              certPath,
+              renewalBufferInBusinessDays
+            );
             // return the certificate renewal state to the consumer to handle the
             // renewal usecase.
             resolve(mustRenew);
@@ -451,6 +459,44 @@ export function trustRemoteMachine(
   });
 }
 
+/**
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
+ * @param closeRemoteFunc - function that closes the remote machine connection.
+ *
+ * @private
+ * @internal
+ */
+export async function _trustRemoteMachine(
+  hostname: string,
+  port: number,
+  certPath: string,
+  renewalBufferInBusinessDays: number,
+  trustCertsOnRemoteFunc = trustCertsOnRemote,
+  closeRemoteFunc = closeRemoteServer
+): Promise<boolean> {
+  try {
+    // Trust the certs
+    const { mustRenew } = await trustCertsOnRemoteFunc(
+      hostname,
+      port,
+      certPath,
+      renewalBufferInBusinessDays
+    );
+    // return the certificate renewal state to the consumer to handle the
+    // renewal usecase.
+    return mustRenew;
+  } catch (err) {
+    throw new Error(err);
+  } finally {
+    // Close the remote server and cleanup always.
+    const remoteServer = await closeRemoteFunc(hostname, port);
+    debug(remoteServer);
+  }
+}
 /**
  * Untrust the certificate for a given file path.
  * @public

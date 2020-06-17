@@ -73,6 +73,13 @@ export function removeDomain(commonName: string): void;
 // @public
 export function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
 
+// Warning: (tsdoc-undefined-tag) The TSDoc tag "@private" is not defined in this configuration
+// Warning: (ae-forgotten-export) The symbol "trustCertsOnRemote" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "closeRemoteServer" needs to be exported by the entry point index.d.ts
+//
+// @internal (undocumented)
+export function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
+
 // @public
 export function uninstall(): void;
 

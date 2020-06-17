@@ -62,6 +62,13 @@ export declare interface CertOptions {
     domainCertExpiry: number;
 }
 
+/**
+ * Closes the remote server
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ */
+declare function closeRemoteServer(hostname: string, port: number): Promise<string>;
+
 /* Excluded from this release type: configuredDomains */
 
 /**
@@ -76,6 +83,13 @@ export declare interface DomainData {
 }
 
 /* Excluded from this release type: getCertExpirationInfo */
+
+/**
+ * Returns the remote box's certificate
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ */
+declare function getRemoteCertificate(hostname: string, port: number): Promise<string>;
 
 /**
  * Check whether a certificate with a given common_name has been installed
@@ -139,6 +153,17 @@ export declare function removeAndRevokeDomainCert(commonName: string): Promise<v
 export declare function removeDomain(commonName: string): void;
 
 /**
+ * Trust the certificate for a given hostname and port and add
+ * the returned cert to the local trust store.
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ */
+declare function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate, closeRemoteFunc?: typeof closeRemoteServer): Promise<{
+    mustRenew: boolean;
+}>;
+
+/**
  * Trust the remote hosts's certificate on local machine.
  * This function would ssh into the remote host, get the certificate
  * and trust the local machine from where this function is getting called from.
@@ -149,6 +174,8 @@ export declare function removeDomain(commonName: string): void;
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
  */
 export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+
+/* Excluded from this release type: _trustRemoteMachine */
 
 /**
  * Remove as much of the devcert files and state as we can. This is necessary

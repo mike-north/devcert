@@ -2,8 +2,8 @@ import fetch from 'node-fetch';
 
 /**
  * Returns the remote box's certificate
- * @param hostname
- * @param port
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
  */
 export async function getRemoteCertificate(
   hostname: string,
@@ -17,8 +17,8 @@ export async function getRemoteCertificate(
 
 /**
  * Closes the remote server
- * @param hostname
- * @param port
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
  */
 export async function closeRemoteServer(
   hostname: string,
@@ -30,6 +30,6 @@ export async function closeRemoteServer(
     );
     return await response.text();
   } catch (err) {
-    return Promise.resolve(err);
+    throw new Error(err);
   }
 }

@@ -5,6 +5,7 @@
 /// <reference types="node" />
 import { uninstall } from './certificate-authority';
 import { UserInterface } from './user-interface';
+import { getRemoteCertificate, closeRemoteServer } from './remote-utils';
 export { uninstall, UserInterface };
 /**
  * Certificate options
@@ -116,6 +117,16 @@ export declare function getCertExpirationInfo(commonName: string, renewalBufferI
     expireAt: Date;
 };
 /**
+ * Trust the certificate for a given hostname and port and add
+ * the returned cert to the local trust store.
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ */
+declare function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate, closeRemoteFunc?: typeof closeRemoteServer): Promise<{
+    mustRenew: boolean;
+}>;
+/**
  * Trust the remote hosts's certificate on local machine.
  * This function would ssh into the remote host, get the certificate
  * and trust the local machine from where this function is getting called from.
@@ -126,6 +137,18 @@ export declare function getCertExpirationInfo(commonName: string, renewalBufferI
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
  */
 export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+/**
+ * @param hostname - hostname of the remote machine
+ * @param port - port to connect the remote machine
+ * @param certPath - file path to store the cert
+ * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
+ * @param closeRemoteFunc - function that closes the remote machine connection.
+ *
+ * @private
+ * @internal
+ */
+export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
 /**
  * Untrust the certificate for a given file path.
  * @public
