@@ -3,7 +3,7 @@ import { rootCACertPath } from '../../src/constants';
 import express = require('express');
 import * as fs from 'fs';
 
-function addCleanCommand(y: yargs.Argv<{}>): yargs.Argv<{}> {
+function addRemoteCommand(y: yargs.Argv<{}>): yargs.Argv<{}> {
   return y.command(
     'remote',
     'connect to remote server',
@@ -38,4 +38,4 @@ function addCleanCommand(y: yargs.Argv<{}>): yargs.Argv<{}> {
   );
 }
 
-export default addCleanCommand;
+export default addRemoteCommand;

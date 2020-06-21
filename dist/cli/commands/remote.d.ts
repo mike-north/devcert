@@ -1,3 +1,3 @@
 import * as yargs from 'yargs';
-declare function addCleanCommand(y: yargs.Argv<{}>): yargs.Argv<{}>;
-export default addCleanCommand;
+declare function addRemoteCommand(y: yargs.Argv<{}>): yargs.Argv<{}>;
+export default addRemoteCommand;
