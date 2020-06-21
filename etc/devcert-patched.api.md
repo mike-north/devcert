@@ -54,6 +54,16 @@ export type IReturnCaPath<O extends Options> = O['getCaPath'] extends true ? CaP
 // @public
 export type IReturnData<O extends Options = {}> = DomainData & IReturnCa<O> & IReturnCaPath<O>;
 
+// @public (undocumented)
+export interface Logger {
+    // (undocumented)
+    error: typeof console.error;
+    // (undocumented)
+    log: typeof console.log;
+    // (undocumented)
+    warn: typeof console.warn;
+}
+
 // @public
 export interface Options {
     getCaBuffer?: boolean;
@@ -71,14 +81,14 @@ export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
 export function removeDomain(commonName: string): void;
 
 // @public
-export function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+export function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number, logger?: Logger): Promise<boolean>;
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@private" is not defined in this configuration
 // Warning: (ae-forgotten-export) The symbol "trustCertsOnRemote" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "closeRemoteServer" needs to be exported by the entry point index.d.ts
 //
 // @internal (undocumented)
-export function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
+export function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, logger?: Logger, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
 
 // @public
 export function uninstall(): void;

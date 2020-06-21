@@ -8,6 +8,7 @@ QUnit.module('trust remote machine tests', hooks => {
       3333,
       './tmp',
       10,
+      undefined,
       (hostname, port, certpath, renewalBufferInBusinessDays) => {
         assert.equal(hostname, 'foo.bar.biz', 'hostname passed to callback');
         assert.equal(port, 3333, 'port passed to callback');
@@ -25,6 +26,6 @@ QUnit.module('trust remote machine tests', hooks => {
         return Promise.resolve('Server closed successfully');
       }
     );
-    assert.equal(data, false, 'the must renew is false')
+    assert.equal(data, false, 'the must renew is false');
   });
 });

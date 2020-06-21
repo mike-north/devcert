@@ -38,7 +38,8 @@ import { getRemoteCertificate, closeRemoteServer } from './remote-utils';
 import { pki } from 'node-forge';
 import { subBusinessDays } from 'date-fns';
 import { pathForDomain, keyPathForDomain, certPathForDomain } from './utils';
-export { uninstall, UserInterface };
+import { Logger } from './logger';
+export { uninstall, UserInterface, Logger, closeRemoteServer };
 const debug = createDebug('devcert');
 
 const REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW = 5;
@@ -358,6 +359,18 @@ async function certificateForImpl<
   return ret;
 }
 
+function _logOrDebug(
+  logger: Logger | undefined,
+  type: 'log' | 'warn' | 'error',
+  message: string
+): void {
+  if (logger && type) {
+    logger[type](message);
+  } else {
+    debug(message);
+  }
+}
+
 /**
  * Trust the certificate for a given hostname and port and add
  * the returned cert to the local trust store.
@@ -376,15 +389,16 @@ async function trustCertsOnRemote(
   // Get the remote certificate from the server
   let mustRenew = false;
   try {
+    debug('getting cert from remote machine');
     const certData = await getRemoteCertsFunc(hostname, port);
     mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
+    debug(`writing the certificate data onto local file path: ${certPath}`);
     // Write the certificate data on this file.
     writeFileSync(certPath, certData);
 
     // Trust the remote cert on your local box
     await currentPlatform.addToTrustStores(certPath);
     debug('Certificate trusted successfully');
-    debug('Attempting to close the remote server');
   } catch (err) {
     closeRemoteFunc(hostname, port);
     throw new Error(err);
@@ -400,15 +414,17 @@ async function trustCertsOnRemote(
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param logger - Optional param for enabling logging in the consuming apps
  */
 export function trustRemoteMachine(
   hostname: string,
   port: number,
   certPath: string,
-  renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW
+  renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
+  logger?: Logger
 ): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    debug(`Connecting to remote server on port: ${port}`);
+    _logOrDebug(logger, 'log', `Connecting to remote host ${hostname} via ssh`);
     // Connect to remote box via ssh.
     const child = execa.shell(
       // @TODO Change this to npx
@@ -430,17 +446,27 @@ export function trustRemoteMachine(
     }
     // Listen to the stdout stream and determine the appropriate steps.
     if (child && child.stdout) {
+      _logOrDebug(
+        logger,
+        'log',
+        `Attempting to start the server at port ${port}. This may take a while...`
+      );
       child.stdout.on('data', async (data: execa.StdIOOption) => {
-        debug('Connected to remote server successfully');
         const stdoutData = data?.toString().trimRight();
         if (stdoutData?.includes(`Server started at port: ${port}`)) {
+          _logOrDebug(
+            logger,
+            'log',
+            `Connected to remote host ${hostname} via ssh successfully`
+          );
           // Once certs are trusted, close the remote server and cleanup.
           try {
             const mustRenew = await _trustRemoteMachine(
               hostname,
               port,
               certPath,
-              renewalBufferInBusinessDays
+              renewalBufferInBusinessDays,
+              logger
             );
             // return the certificate renewal state to the consumer to handle the
             // renewal usecase.
@@ -450,7 +476,7 @@ export function trustRemoteMachine(
           }
           child.kill();
         } else if (stdoutData?.includes('Process terminated')) {
-          debug('Remote server closed successfully');
+          _logOrDebug(logger, 'log', 'Remote server closed successfully');
         }
       });
     } else {
@@ -464,6 +490,7 @@ export function trustRemoteMachine(
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param logger - Optional param for enabling logging in the consuming apps
  * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
  * @param closeRemoteFunc - function that closes the remote machine connection.
  *
@@ -475,10 +502,16 @@ export async function _trustRemoteMachine(
   port: number,
   certPath: string,
   renewalBufferInBusinessDays: number,
+  logger?: Logger,
   trustCertsOnRemoteFunc = trustCertsOnRemote,
   closeRemoteFunc = closeRemoteServer
 ): Promise<boolean> {
   try {
+    _logOrDebug(
+      logger,
+      'log',
+      'Attempting to trust the remote certificate on this machine'
+    );
     // Trust the certs
     const { mustRenew } = await trustCertsOnRemoteFunc(
       hostname,
@@ -486,15 +519,17 @@ export async function _trustRemoteMachine(
       certPath,
       renewalBufferInBusinessDays
     );
+    _logOrDebug(logger, 'log', 'Certificate trusted successfully');
     // return the certificate renewal state to the consumer to handle the
     // renewal usecase.
     return mustRenew;
   } catch (err) {
     throw new Error(err);
   } finally {
+    _logOrDebug(logger, 'log', 'Attempting to close the remote server');
     // Close the remote server and cleanup always.
-    const remoteServer = await closeRemoteFunc(hostname, port);
-    debug(remoteServer);
+    const remoteServerResponse = await closeRemoteFunc(hostname, port);
+    debug(remoteServerResponse);
   }
 }
 /**

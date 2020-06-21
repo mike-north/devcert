@@ -67,7 +67,7 @@ export declare interface CertOptions {
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
  */
-declare function closeRemoteServer(hostname: string, port: number): Promise<string>;
+export declare function closeRemoteServer(hostname: string, port: number): Promise<string>;
 
 /**
  * Get a list of domains that certifiates have been generated for
@@ -134,6 +134,15 @@ export declare type IReturnCaPath<O extends Options> = O['getCaPath'] extends tr
 export declare type IReturnData<O extends Options = {}> = DomainData & IReturnCa<O> & IReturnCaPath<O>;
 
 /**
+ * @public
+ */
+export declare interface Logger {
+    log: typeof console.log;
+    warn: typeof console.warn;
+    error: typeof console.error;
+}
+
+/**
  * Cert generation options
  *
  * @public
@@ -188,21 +197,23 @@ declare function trustCertsOnRemote(hostname: string, port: number, certPath: st
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param logger - Optional param for enabling logging in the consuming apps
  */
-export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number, logger?: Logger): Promise<boolean>;
 
 /**
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param logger - Optional param for enabling logging in the consuming apps
  * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
  * @param closeRemoteFunc - function that closes the remote machine connection.
  *
  * @private
  * @internal
  */
-export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
+export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, logger?: Logger, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
 
 /**
  * Remove as much of the devcert files and state as we can. This is necessary

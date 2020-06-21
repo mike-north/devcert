@@ -15,7 +15,7 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 |  [hasCertificateFor(commonName)](./devcert-patched.hascertificatefor.md) | Check whether a certificate with a given common\_name has been installed |
 |  [removeAndRevokeDomainCert(commonName)](./devcert-patched.removeandrevokedomaincert.md) | Remove a certificate and revoke it from the OpenSSL cert database |
 |  [removeDomain(commonName)](./devcert-patched.removedomain.md) | Remove a certificate |
-|  [trustRemoteMachine(hostname, port, certPath, renewalBufferInBusinessDays)](./devcert-patched.trustremotemachine.md) | Trust the remote hosts's certificate on local machine. This function would ssh into the remote host, get the certificate and trust the local machine from where this function is getting called from. |
+|  [trustRemoteMachine(hostname, port, certPath, renewalBufferInBusinessDays, logger)](./devcert-patched.trustremotemachine.md) | Trust the remote hosts's certificate on local machine. This function would ssh into the remote host, get the certificate and trust the local machine from where this function is getting called from. |
 |  [uninstall()](./devcert-patched.uninstall.md) | Remove as much of the devcert files and state as we can. This is necessary when generating a new root certificate, and should be available to API consumers as well.<!-- -->Not all of it will be removable. If certutil is not installed, we'll leave Firefox alone. We try to remove files with maximum permissions, and if that fails, we'll silently fail.<!-- -->It's also possible that the command to untrust will not work, and we'll silently fail that as well; with no existing certificates anymore, the security exposure there is minimal. |
 |  [untrustMachine(filePath)](./devcert-patched.untrustmachine.md) | Untrust the certificate for a given file path. |
 
@@ -27,6 +27,7 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 |  [CaPath](./devcert-patched.capath.md) | The cert authority's path on disk |
 |  [CertOptions](./devcert-patched.certoptions.md) | Certificate options |
 |  [DomainData](./devcert-patched.domaindata.md) | Domain cert public and private keys as buffers |
+|  [Logger](./devcert-patched.logger.md) |  |
 |  [Options](./devcert-patched.options.md) | Cert generation options |
 |  [UserInterface](./devcert-patched.userinterface.md) | A representation of several parts of the local system that the user interacts with |
 

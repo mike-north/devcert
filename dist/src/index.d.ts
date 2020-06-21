@@ -6,7 +6,8 @@
 import { uninstall } from './certificate-authority';
 import { UserInterface } from './user-interface';
 import { getRemoteCertificate, closeRemoteServer } from './remote-utils';
-export { uninstall, UserInterface };
+import { Logger } from './logger';
+export { uninstall, UserInterface, Logger, closeRemoteServer };
 /**
  * Certificate options
  * @public
@@ -135,20 +136,22 @@ declare function trustCertsOnRemote(hostname: string, port: number, certPath: st
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param logger - Optional param for enabling logging in the consuming apps
  */
-export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number, logger?: Logger): Promise<boolean>;
 /**
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
+ * @param logger - Optional param for enabling logging in the consuming apps
  * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
  * @param closeRemoteFunc - function that closes the remote machine connection.
  *
  * @private
  * @internal
  */
-export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
+export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, logger?: Logger, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
 /**
  * Untrust the certificate for a given file path.
  * @public

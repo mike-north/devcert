@@ -9,7 +9,7 @@ Trust the remote hosts's certificate on local machine. This function would ssh i
 <b>Signature:</b>
 
 ```typescript
-export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number): Promise<boolean>;
+export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number, logger?: Logger): Promise<boolean>;
 ```
 
 ## Parameters
@@ -20,6 +20,7 @@ export declare function trustRemoteMachine(hostname: string, port: number, certP
 |  port | <code>number</code> | port to connect the remote machine |
 |  certPath | <code>string</code> | file path to store the cert |
 |  renewalBufferInBusinessDays | <code>number</code> | valid days before renewing the cert |
+|  logger | <code>Logger</code> | Optional param for enabling logging in the consuming apps |
 
 <b>Returns:</b>
 
