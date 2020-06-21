@@ -19,9 +19,3 @@ export interface Logger
 |  [log](./devcert-patched.logger.log.md) | <code>typeof console.log</code> |  |
 |  [warn](./devcert-patched.logger.warn.md) | <code>typeof console.warn</code> |  |
 
-## Methods
-
-|  Method | Description |
-|  --- | --- |
-|  [notifyTaskScheduled(status)](./devcert-patched.logger.notifytaskscheduled.md) |  |
-

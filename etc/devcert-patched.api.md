@@ -26,6 +26,9 @@ export interface CertOptions {
     domainCertExpiry: number;
 }
 
+// @public
+export function closeRemoteServer(hostname: string, port: number): Promise<string>;
+
 // @alpha
 export function configuredDomains(): string[];
 
@@ -85,7 +88,6 @@ export function trustRemoteMachine(hostname: string, port: number, certPath: str
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@private" is not defined in this configuration
 // Warning: (ae-forgotten-export) The symbol "trustCertsOnRemote" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "closeRemoteServer" needs to be exported by the entry point index.d.ts
 //
 // @internal (undocumented)
 export function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, logger?: Logger, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;

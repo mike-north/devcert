@@ -66,6 +66,8 @@ export declare interface CertOptions {
  * Closes the remote server
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
+ *
+ * @public
  */
 export declare function closeRemoteServer(hostname: string, port: number): Promise<string>;
 

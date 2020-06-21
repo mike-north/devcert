@@ -19,6 +19,8 @@ export async function getRemoteCertificate(
  * Closes the remote server
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
+ *
+ * @public
  */
 export async function closeRemoteServer(
   hostname: string,
