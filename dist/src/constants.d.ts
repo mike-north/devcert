@@ -3,6 +3,7 @@ export declare const isLinux: boolean;
 export declare const isWindows: boolean;
 export declare const configDir: string;
 export declare const configPath: (...pathSegments: string[]) => string;
+export declare const DEFAULT_REMOTE_PORT = 2702;
 export declare const domainsDir: string;
 export declare const caVersionFile: string;
 export declare const opensslSerialFilePath: string;

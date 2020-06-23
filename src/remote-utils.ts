@@ -10,7 +10,7 @@ export async function getRemoteCertificate(
   port: number
 ): Promise<string> {
   const response = await fetch(
-    `http://${hostname}:${port}/getRemoteCertificate`
+    `http://${hostname}:${port}/get_remote_certificate`
   );
   return await response.text();
 }
@@ -28,7 +28,7 @@ export async function closeRemoteServer(
 ): Promise<string> {
   try {
     const response = await fetch(
-      `http://${hostname}:${port}/closeRemoteServer`
+      `http://${hostname}:${port}/close_remote_server`
     );
     return await response.text();
   } catch (err) {

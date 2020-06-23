@@ -120,6 +120,8 @@ export declare type IReturnCaPath<O extends Options> = O['getCaPath'] extends tr
 export declare type IReturnData<O extends Options = {}> = DomainData & IReturnCa<O> & IReturnCaPath<O>;
 
 /**
+ * An interface that allows consuming apps to display logging on their side by
+ * passing in the logging mechanism of their choice
  * @public
  */
 export declare interface Logger {
@@ -163,16 +165,7 @@ export declare function removeAndRevokeDomainCert(commonName: string): Promise<v
  */
 export declare function removeDomain(commonName: string): void;
 
-/**
- * Trust the certificate for a given hostname and port and add
- * the returned cert to the local trust store.
- * @param hostname - hostname of the remote machine
- * @param port - port to connect the remote machine
- * @param certPath - file path to store the cert
- */
-declare function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate, closeRemoteFunc?: typeof closeRemoteServer): Promise<{
-    mustRenew: boolean;
-}>;
+/* Excluded from this release type: trustCertsOnRemote */
 
 /**
  * Trust the remote hosts's certificate on local machine.
@@ -185,9 +178,20 @@ declare function trustCertsOnRemote(hostname: string, port: number, certPath: st
  * @param renewalBufferInBusinessDays - valid days before renewing the cert
  * @param logger - Optional param for enabling logging in the consuming apps
  */
-export declare function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number, logger?: Logger): Promise<boolean>;
+export declare function trustRemoteMachine(hostname: string, certPath: string, commonName: string, port?: number, opts?: Partial<TrustRemoteOptions>): Promise<{
+    mustRenew: boolean;
+}>;
 
 /* Excluded from this release type: _trustRemoteMachine */
+
+declare interface TrustRemoteOptions {
+    alternativeNames?: string[];
+    renewalBufferInBusinessDays?: number;
+    certOptions?: CertOptions;
+    logger?: Logger;
+    trustCertsOnRemoteFunc?: typeof trustCertsOnRemote;
+    closeRemoteFunc?: typeof closeRemoteServer;
+}
 
 /**
  * Remove as much of the devcert files and state as we can. This is necessary
@@ -211,7 +215,7 @@ export declare function uninstall(): void;
  * @public
  * @param filePath - file path of the cert
  */
-export declare function untrustMachine(filePath: string): void;
+export declare function untrustMachineByCertificate(certPath: string): void;
 
 /**
  * A representation of several parts of the local system that the user interacts with

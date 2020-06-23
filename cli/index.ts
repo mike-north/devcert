@@ -15,5 +15,5 @@ export function main(_args: string[]): void {
     .help()
     .showHelpOnFail(true)
     .demandCommand(3, 'you must specify which command to invoke')
-    .wrap(null).argv;
+    .wrap(null).argv; // For line wrapping. Consume full terminal width
 }

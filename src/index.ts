@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  * @packageDocumentation
  * Utilities for safely generating locally-trusted and machine-specific X.509 certificates for local development
@@ -22,7 +21,8 @@ import {
   isWindows,
   domainsDir,
   rootCAKeyPath,
-  rootCACertPath
+  rootCACertPath,
+  DEFAULT_REMOTE_PORT
 } from './constants';
 import currentPlatform from './platforms';
 import installCertificateAuthority, {
@@ -371,14 +371,25 @@ function _logOrDebug(
   }
 }
 
+interface TrustRemoteOptions {
+  alternativeNames?: string[];
+  renewalBufferInBusinessDays?: number;
+  certOptions?: CertOptions;
+  logger?: Logger;
+  trustCertsOnRemoteFunc?: typeof trustCertsOnRemote;
+  closeRemoteFunc?: typeof closeRemoteServer;
+}
+
 /**
  * Trust the certificate for a given hostname and port and add
  * the returned cert to the local trust store.
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
+ *
+ * @internal
  */
-async function trustCertsOnRemote(
+export async function trustCertsOnRemote(
   hostname: string,
   port: number,
   certPath: string,
@@ -387,11 +398,10 @@ async function trustCertsOnRemote(
   closeRemoteFunc = closeRemoteServer
 ): Promise<{ mustRenew: boolean }> {
   // Get the remote certificate from the server
-  let mustRenew = false;
   try {
     debug('getting cert from remote machine');
     const certData = await getRemoteCertsFunc(hostname, port);
-    mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
+    const mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
     debug(`writing the certificate data onto local file path: ${certPath}`);
     // Write the certificate data on this file.
     writeFileSync(certPath, certData);
@@ -399,11 +409,11 @@ async function trustCertsOnRemote(
     // Trust the remote cert on your local box
     await currentPlatform.addToTrustStores(certPath);
     debug('Certificate trusted successfully');
+    return { mustRenew };
   } catch (err) {
     closeRemoteFunc(hostname, port);
     throw new Error(err);
   }
-  return { mustRenew };
 }
 /**
  * Trust the remote hosts's certificate on local machine.
@@ -418,42 +428,69 @@ async function trustCertsOnRemote(
  */
 export function trustRemoteMachine(
   hostname: string,
-  port: number,
   certPath: string,
-  renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
-  logger?: Logger
-): Promise<boolean> {
-  return new Promise((resolve, reject) => {
+  commonName: string,
+  port = DEFAULT_REMOTE_PORT,
+  opts: Partial<TrustRemoteOptions> = {}
+): Promise<{ mustRenew: boolean }> {
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises, no-async-promise-executor
+  return new Promise(async (resolve, reject) => {
+    const options: TrustRemoteOptions = Object.assign(
+      {
+        alternativeNames: [],
+        renewalBufferInBusinessDays: REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
+        trustCertsOnRemote,
+        closeRemoteServer
+      },
+      opts
+    );
+
+    debug('getting local cert data for connecting to remote');
+    const { cert, key } = await certificateFor(
+      commonName,
+      options.alternativeNames || [],
+      { renewalBufferInBusinessDays: options.renewalBufferInBusinessDays },
+      options.certOptions
+    );
+    console.log('hey there', cert.toString());
+    const logger = opts.logger;
     _logOrDebug(logger, 'log', `Connecting to remote host ${hostname} via ssh`);
     // Connect to remote box via ssh.
     const child = execa.shell(
       // @TODO Change this to npx
-      `ssh ${hostname} npx mike-north/devcert#suchita/remote-connect remote --port=${port} `,
+      `ssh ${hostname} npx mike-north/devcert#suchita/remote-connect remote --port=${port} --cert=${cert.toString()} --key=${key.toString()}`,
       {
         detached: false
       }
     );
 
     // Throw any error that might have occurred on the remote side.
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (child && child.stderr) {
       child.stderr.on('data', (data: execa.StdIOOption) => {
-        const stdErrData = data?.toString().trimRight();
-        if (stdErrData?.toLowerCase().includes('error')) {
-          closeRemoteServer(hostname, port);
-          throw new Error(stdErrData);
+        if (data) {
+          const stdErrData = data.toString().trimRight();
+          console.log('hahahaha', stdErrData)
+          if (stdErrData?.toLowerCase().includes('error')) {
+            debug('Error thrown on the remote side. Closing Remote server');
+            closeRemoteServer(hostname, port);
+            throw new Error(stdErrData);
+          }
         }
       });
     }
     // Listen to the stdout stream and determine the appropriate steps.
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     if (child && child.stdout) {
       _logOrDebug(
         logger,
         'log',
         `Attempting to start the server at port ${port}. This may take a while...`
       );
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       child.stdout.on('data', async (data: execa.StdIOOption) => {
         const stdoutData = data?.toString().trimRight();
-        if (stdoutData?.includes(`Server started at port: ${port}`)) {
+        if (stdoutData?.includes(`STATE: READY_FOR_CONNECTION`)) {
           _logOrDebug(
             logger,
             'log',
@@ -465,18 +502,21 @@ export function trustRemoteMachine(
               hostname,
               port,
               certPath,
-              renewalBufferInBusinessDays,
+              options.renewalBufferInBusinessDays ||
+                REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
               logger
             );
             // return the certificate renewal state to the consumer to handle the
             // renewal usecase.
-            resolve(mustRenew);
+            resolve({ mustRenew });
           } catch (err) {
             throw new Error(err);
           }
           child.kill();
-        } else if (stdoutData?.includes('Process terminated')) {
+        } else if (stdoutData?.includes('REMOTE_CONNECTION_CLOSED')) {
           _logOrDebug(logger, 'log', 'Remote server closed successfully');
+        } else {
+          console.log(stdoutData, 'fghfghfghfghfghf');
         }
       });
     } else {
@@ -494,7 +534,6 @@ export function trustRemoteMachine(
  * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
  * @param closeRemoteFunc - function that closes the remote machine connection.
  *
- * @private
  * @internal
  */
 export async function _trustRemoteMachine(
@@ -537,8 +576,8 @@ export async function _trustRemoteMachine(
  * @public
  * @param filePath - file path of the cert
  */
-export function untrustMachine(filePath: string): void {
-  currentPlatform.removeFromTrustStores(filePath);
+export function untrustMachineByCertificate(certPath: string): void {
+  currentPlatform.removeFromTrustStores(certPath);
 }
 
 /**

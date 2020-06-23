@@ -65,6 +65,7 @@
     "@types/yargs": "^15.0.5",
     "@typescript-eslint/eslint-plugin": "^2.17.0",
     "@typescript-eslint/parser": "^2.17.0",
+    "@types/express": "^4.17.6",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-async-await": "^0.0.0",
@@ -74,12 +75,10 @@
     "prettier": "^1.19.1",
     "qunit": "^2.10.0",
     "standard-version": "^4.3.0",
-    "tcp-port-used": "^1.0.1",
     "typescript": "^3.7.5"
   },
   "dependencies": {
     "@types/date-fns": "^2.6.0",
-    "@types/express": "^4.17.6",
     "application-config-path": "^0.1.0",
     "chalk": "^3.0.0",
     "command-exists": "^1.2.4",

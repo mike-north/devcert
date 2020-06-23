@@ -24,6 +24,8 @@ export const configPath: (...pathSegments: string[]) => string = path.join.bind(
   configDir
 );
 
+export const DEFAULT_REMOTE_PORT = 2702;
+
 export const domainsDir = configPath('domains');
 
 export const caVersionFile = configPath('devcert-ca-version');
