@@ -419,26 +419,26 @@ export async function trustCertsOnRemote(
   port: number,
   certPath: string,
   renewalBufferInBusinessDays: number,
-  getRemoteCertsFunc = getRemoteCertificate,
-  closeRemoteFunc = closeRemoteServer
+  getRemoteCertsFunc = getRemoteCertificate
 ): Promise<{ mustRenew: boolean }> {
-  // Get the remote certificate from the server
-  try {
-    debug('getting cert from remote machine');
-    const certData = await getRemoteCertsFunc(hostname, port);
-    const mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
-    debug(`writing the certificate data onto local file path: ${certPath}`);
-    // Write the certificate data on this file.
-    writeFileSync(certPath, certData);
-
-    // Trust the remote cert on your local box
-    await currentPlatform.addToTrustStores(certPath);
-    debug('Certificate trusted successfully');
-    return { mustRenew };
-  } catch (err) {
-    closeRemoteFunc(hostname, port);
-    throw new Error(err);
+  if (!existsSync(certPath)) {
+    throw new Error(
+      `The certificate path ${certPath} to write the remote cert data on does not exist.`
+    );
   }
+  // Get the remote certificate from the server
+  debug('getting cert from remote machine');
+  const certData = await getRemoteCertsFunc(hostname, port);
+  const mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
+  debug(`writing the certificate data onto local file path: ${certPath}`);
+
+  // Write the certificate data on this file.
+  writeFileSync(certPath, certData);
+
+  // Trust the remote cert on your local box
+  await currentPlatform.addToTrustStores(certPath);
+  debug('Certificate trusted successfully');
+  return { mustRenew };
 }
 /**
  * Trust the remote hosts's certificate on local machine.
@@ -449,7 +449,6 @@ export async function trustCertsOnRemote(
  * @param certPath - file path to store the cert
  * @param param2 - TrustRemoteOptions options
  */
-// check for multiple invocations for ready for connection
 export async function trustRemoteMachine(
   hostname: string,
   certPath: string,
@@ -592,8 +591,6 @@ export async function _trustRemoteMachine(
     // return the certificate renewal state to the consumer to handle the
     // renewal usecase.
     return mustRenew;
-  } catch (err) {
-    throw new Error(err);
   } finally {
     _logOrDebug(logger, 'log', 'Attempting to close the remote server');
     // Close the remote server and cleanup always.

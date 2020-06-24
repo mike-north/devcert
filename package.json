@@ -6,7 +6,8 @@
   "types": "dist/devcert-patched.d.ts",
   "scripts": {
     "pretest": "yarn build:tests",
-    "test": "yarn lint && qunit test-js/**/*.test.js",
+    "test": "yarn lint && yarn test:qunit",
+    "test:qunit": "qunit test-js/**/*.test.js",
     "build:tests": "tsc -b test",
     "clean": "rimraf dist",
     "build": "yarn clean && yarn build:ts && yarn build:api-extract && yarn build:api-docs",

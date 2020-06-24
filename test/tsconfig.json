@@ -1,15 +1,7 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "ES2018",
-    "sourceMap": true,
-    "strict": true,
     "outDir": "../test-js",
-    "baseUrl": ".",
-    "paths": {
-      "@mike-north/devcert-patched": ["../dist/devcert-patched-private.d.ts"],
-      "*": ["../types/*"]
-    }
   },
   "include": [".", "../src"]
 }
