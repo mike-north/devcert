@@ -4,6 +4,7 @@
 
 ## Logger interface
 
+An interface that allows consuming apps to display logging on their side by passing in the logging mechanism of their choice
 
 <b>Signature:</b>
 
@@ -15,7 +16,7 @@ export interface Logger
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [error](./devcert-patched.logger.error.md) | <code>typeof console.error</code> |  |
-|  [log](./devcert-patched.logger.log.md) | <code>typeof console.log</code> |  |
-|  [warn](./devcert-patched.logger.warn.md) | <code>typeof console.warn</code> |  |
+|  [error](./devcert-patched.logger.error.md) | <code>typeof console.error</code> | error logging |
+|  [log](./devcert-patched.logger.log.md) | <code>typeof console.log</code> | info logging |
+|  [warn](./devcert-patched.logger.warn.md) | <code>typeof console.warn</code> | warn logging |
 

@@ -31,7 +31,7 @@ function assertIsString(arg: unknown, label: string): asserts arg is string {
 function addRemoteCommand(y: yargs.Argv<{}>): yargs.Argv<{}> {
   return y.command(
     'remote',
-    'connect to the remote machine to facilitate trusting the certs',
+    false,
     yarg => {
       yarg.option('port', {
         describe: 'port number where the remote host should be connected',
@@ -48,17 +48,21 @@ function addRemoteCommand(y: yargs.Argv<{}>): yargs.Argv<{}> {
     },
     argv => {
       const { port, cert, key } = argv;
-      console.log('the redatatatata', cert)
       assertIsPositiveInteger(port, 'port');
       assertIsString(cert, 'cert');
       assertIsString(key, 'key');
       const app = express();
-      const credentials = { key, cert };
-      console.log('ceredentialsss', key);
+      const credentials = {
+        key: key.replace(/\\n/g, '\n'),
+        cert: cert.replace(/\\n/g, '\n')
+      };
       app.get('/get_remote_certificate', (req, res) => {
-        if (fs.existsSync(rootCACertPath)) {
-          res.send(fs.readFileSync(rootCACertPath, 'utf8'));
+        if (!fs.existsSync(rootCACertPath)) {
+          throw new Error(
+            `Could not read the public certificate file ${rootCACertPath}, please check the file exists and try again.`
+          );
         }
+        res.send(fs.readFileSync(rootCACertPath, 'utf8'));
       });
 
       const httpsServer = https.createServer(credentials, app);

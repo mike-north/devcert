@@ -4,6 +4,8 @@
 
 ## Logger.warn property
 
+warn logging
+
 <b>Signature:</b>
 
 ```typescript

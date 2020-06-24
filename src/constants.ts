@@ -39,7 +39,7 @@ export const opensslDatabaseFilePath = configPath(
 );
 export const caSelfSignConfig = path.join(
   __dirname,
-  '../openssl-configurations/certificate-authority-self-signing.conf'
+  '../../openssl-configurations/certificate-authority-self-signing.conf'
 );
 
 function includeWildcards(list: string[]): string[] {
@@ -62,7 +62,7 @@ export async function withDomainSigningRequestConfig(
   const source = readFile(
     path.join(
       __dirname,
-      '../openssl-configurations/domain-certificate-signing-requests.conf'
+      '../../openssl-configurations/domain-certificate-signing-requests.conf'
     ),
     'utf-8'
   );
@@ -85,7 +85,10 @@ export async function withDomainCertificateConfig(
   const tmp = tmpDir();
   const tmpFile = path.join(tmp.name, 'ca.cfg');
   const source = readFile(
-    path.join(__dirname, '../openssl-configurations/domain-certificates.conf'),
+    path.join(
+      __dirname,
+      '../../openssl-configurations/domain-certificates.conf'
+    ),
     'utf-8'
   );
   const template = makeTemplate(source);

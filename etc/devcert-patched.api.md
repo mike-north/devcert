@@ -46,6 +46,9 @@ export function getCertExpirationInfo(commonName: string, renewalBufferInBusines
 };
 
 // @public
+export function getRemoteCertificate(hostname: string, port: number): Promise<string>;
+
+// @public
 export function hasCertificateFor(commonName: string): boolean;
 
 // @public
@@ -57,13 +60,10 @@ export type IReturnCaPath<O extends Options> = O['getCaPath'] extends true ? CaP
 // @public
 export type IReturnData<O extends Options = {}> = DomainData & IReturnCa<O> & IReturnCaPath<O>;
 
-// @public (undocumented)
+// @public
 export interface Logger {
-    // (undocumented)
     error: typeof console.error;
-    // (undocumented)
     log: typeof console.log;
-    // (undocumented)
     warn: typeof console.warn;
 }
 
@@ -84,19 +84,32 @@ export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
 export function removeDomain(commonName: string): void;
 
 // @public
-export function trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays?: number, logger?: Logger): Promise<boolean>;
+export function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate, closeRemoteFunc?: typeof closeRemoteServer): Promise<{
+    mustRenew: boolean;
+}>;
 
-// Warning: (tsdoc-undefined-tag) The TSDoc tag "@private" is not defined in this configuration
-// Warning: (ae-forgotten-export) The symbol "trustCertsOnRemote" needs to be exported by the entry point index.d.ts
-//
-// @internal (undocumented)
-export function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, logger?: Logger, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
+// @public
+export function trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger }?: Partial<TrustRemoteOptions>): Promise<{
+    mustRenew: boolean;
+}>;
+
+// @internal
+export function _trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger, trustCertsOnRemoteFunc, closeRemoteFunc }?: Partial<TrustRemoteOptions>): Promise<boolean>;
+
+// @public
+export interface TrustRemoteOptions {
+    closeRemoteFunc: typeof closeRemoteServer;
+    logger?: Logger;
+    port: number;
+    renewalBufferInBusinessDays: number;
+    trustCertsOnRemoteFunc: typeof trustCertsOnRemote;
+}
 
 // @public
 export function uninstall(): void;
 
 // @public
-export function untrustMachine(filePath: string): void;
+export function untrustMachineByCertificate(certPath: string): void;
 
 // @public
 export interface UserInterface {

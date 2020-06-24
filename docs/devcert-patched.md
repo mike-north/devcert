@@ -13,12 +13,14 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 |  [certificateFor(commonName, alternativeNames, options, partialCertOptions)](./devcert-patched.certificatefor.md) | Request an SSL certificate for the given app name signed by the devcert root certificate authority. If devcert has previously generated a certificate for that app name on this machine, it will reuse that certificate.<!-- -->If this is the first time devcert is being run on this machine, it will generate and attempt to install a root certificate authority.<!-- -->If <code>options.getCaBuffer</code> is true, return value will include the ca certificate data as { ca: Buffer }<!-- -->If <code>options.getCaPath</code> is true, return value will include the ca certificate path as { caPath: string } |
 |  [certificateFor(commonName, options, partialCertOptions)](./devcert-patched.certificatefor_1.md) | Request an SSL certificate for the given app name signed by the devcert root certificate authority. If devcert has previously generated a certificate for that app name on this machine, it will reuse that certificate.<!-- -->If this is the first time devcert is being run on this machine, it will generate and attempt to install a root certificate authority.<!-- -->If <code>options.getCaBuffer</code> is true, return value will include the ca certificate data as { ca: Buffer }<!-- -->If <code>options.getCaPath</code> is true, return value will include the ca certificate path as { caPath: string } |
 |  [closeRemoteServer(hostname, port)](./devcert-patched.closeremoteserver.md) | Closes the remote server |
+|  [getRemoteCertificate(hostname, port)](./devcert-patched.getremotecertificate.md) | Returns the remote box's certificate |
 |  [hasCertificateFor(commonName)](./devcert-patched.hascertificatefor.md) | Check whether a certificate with a given common\_name has been installed |
 |  [removeAndRevokeDomainCert(commonName)](./devcert-patched.removeandrevokedomaincert.md) | Remove a certificate and revoke it from the OpenSSL cert database |
 |  [removeDomain(commonName)](./devcert-patched.removedomain.md) | Remove a certificate |
-|  [trustRemoteMachine(hostname, port, certPath, renewalBufferInBusinessDays, logger)](./devcert-patched.trustremotemachine.md) | Trust the remote hosts's certificate on local machine. This function would ssh into the remote host, get the certificate and trust the local machine from where this function is getting called from. |
+|  [trustCertsOnRemote(hostname, port, certPath, renewalBufferInBusinessDays, getRemoteCertsFunc, closeRemoteFunc)](./devcert-patched.trustcertsonremote.md) | Trust the certificate for a given hostname and port and add the returned cert to the local trust store. |
+|  [trustRemoteMachine(hostname, certPath, { port, renewalBufferInBusinessDays, logger })](./devcert-patched.trustremotemachine.md) | Trust the remote hosts's certificate on local machine. This function would ssh into the remote host, get the certificate and trust the local machine from where this function is getting called from. |
 |  [uninstall()](./devcert-patched.uninstall.md) | Remove as much of the devcert files and state as we can. This is necessary when generating a new root certificate, and should be available to API consumers as well.<!-- -->Not all of it will be removable. If certutil is not installed, we'll leave Firefox alone. We try to remove files with maximum permissions, and if that fails, we'll silently fail.<!-- -->It's also possible that the command to untrust will not work, and we'll silently fail that as well; with no existing certificates anymore, the security exposure there is minimal. |
-|  [untrustMachine(filePath)](./devcert-patched.untrustmachine.md) | Untrust the certificate for a given file path. |
+|  [untrustMachineByCertificate(certPath)](./devcert-patched.untrustmachinebycertificate.md) | Untrust the certificate for a given file path. |
 
 ## Interfaces
 
@@ -28,8 +30,9 @@ Utilities for safely generating locally-trusted and machine-specific X.509 certi
 |  [CaPath](./devcert-patched.capath.md) | The cert authority's path on disk |
 |  [CertOptions](./devcert-patched.certoptions.md) | Certificate options |
 |  [DomainData](./devcert-patched.domaindata.md) | Domain cert public and private keys as buffers |
-|  [Logger](./devcert-patched.logger.md) |  |
+|  [Logger](./devcert-patched.logger.md) | An interface that allows consuming apps to display logging on their side by passing in the logging mechanism of their choice |
 |  [Options](./devcert-patched.options.md) | Cert generation options |
+|  [TrustRemoteOptions](./devcert-patched.trustremoteoptions.md) | Remote certificate trust options |
 |  [UserInterface](./devcert-patched.userinterface.md) | A representation of several parts of the local system that the user interacts with |
 
 ## Type Aliases

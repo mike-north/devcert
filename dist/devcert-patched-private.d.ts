@@ -106,8 +106,10 @@ export declare function getCertExpirationInfo(commonName: string, renewalBufferI
  * Returns the remote box's certificate
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
+ *
+ * @public
  */
-declare function getRemoteCertificate(hostname: string, port: number): Promise<string>;
+export declare function getRemoteCertificate(hostname: string, port: number): Promise<string>;
 
 /**
  * Check whether a certificate with a given common_name has been installed
@@ -141,8 +143,17 @@ export declare type IReturnData<O extends Options = {}> = DomainData & IReturnCa
  * @public
  */
 export declare interface Logger {
+    /**
+     * info logging
+     */
     log: typeof console.log;
+    /**
+     * warn logging
+     */
     warn: typeof console.warn;
+    /**
+     * error logging
+     */
     error: typeof console.error;
 }
 
@@ -188,7 +199,7 @@ export declare function removeDomain(commonName: string): void;
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  *
- * @internal
+ * @public
  */
 export declare function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate, closeRemoteFunc?: typeof closeRemoteServer): Promise<{
     mustRenew: boolean;
@@ -200,35 +211,52 @@ export declare function trustCertsOnRemote(hostname: string, port: number, certP
  * and trust the local machine from where this function is getting called from.
  * @public
  * @param hostname - hostname of the remote machine
- * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
- * @param renewalBufferInBusinessDays - valid days before renewing the cert
- * @param logger - Optional param for enabling logging in the consuming apps
+ * @param param2 - TrustRemoteOptions options
  */
-export declare function trustRemoteMachine(hostname: string, certPath: string, commonName: string, port?: number, opts?: Partial<TrustRemoteOptions>): Promise<{
+export declare function trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger }?: Partial<TrustRemoteOptions>): Promise<{
     mustRenew: boolean;
 }>;
 
 /**
+ * For a given hostname and certpath,gets the certificate from the remote server,
+ * stores it at the provided certPath,
+ * trusts certificate from remote machine and closes the remote server.
+ *
  * @param hostname - hostname of the remote machine
- * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
- * @param renewalBufferInBusinessDays - valid days before renewing the cert
- * @param logger - Optional param for enabling logging in the consuming apps
- * @param trustCertsOnRemoteFunc - function that gets the certificate from remote machine and trusts it on local machine
- * @param closeRemoteFunc - function that closes the remote machine connection.
+ * @param param2 - TrustRemoteOptions options
  *
  * @internal
  */
-export declare function _trustRemoteMachine(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, logger?: Logger, trustCertsOnRemoteFunc?: typeof trustCertsOnRemote, closeRemoteFunc?: typeof closeRemoteServer): Promise<boolean>;
+export declare function _trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger, trustCertsOnRemoteFunc, closeRemoteFunc }?: Partial<TrustRemoteOptions>): Promise<boolean>;
 
-declare interface TrustRemoteOptions {
-    alternativeNames?: string[];
-    renewalBufferInBusinessDays?: number;
-    certOptions?: CertOptions;
+/**
+ * Remote certificate trust options
+ *
+ * @public
+ */
+export declare interface TrustRemoteOptions {
+    /**
+     * port number for the remote server.
+     */
+    port: number;
+    /**
+     * remaining business days validity.
+     */
+    renewalBufferInBusinessDays: number;
+    /**
+     * Logger interface to suppport logging mechanism on the onsumer side.
+     */
     logger?: Logger;
-    trustCertsOnRemoteFunc?: typeof trustCertsOnRemote;
-    closeRemoteFunc?: typeof closeRemoteServer;
+    /**
+     * function to trust certs on remote.
+     */
+    trustCertsOnRemoteFunc: typeof trustCertsOnRemote;
+    /**
+     * function to close the remote server.
+     */
+    closeRemoteFunc: typeof closeRemoteServer;
 }
 
 /**

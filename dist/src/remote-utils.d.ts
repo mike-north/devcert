@@ -2,6 +2,8 @@
  * Returns the remote box's certificate
  * @param hostname - hostname of the remote machine
  * @param port - port to connect the remote machine
+ *
+ * @public
  */
 export declare function getRemoteCertificate(hostname: string, port: number): Promise<string>;
 /**

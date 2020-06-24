@@ -4,6 +4,8 @@
 
 ## Logger.log property
 
+info logging
+
 <b>Signature:</b>
 
 ```typescript

@@ -4,7 +4,16 @@
  * @public
  */
 export interface Logger {
+    /**
+     * info logging
+     */
     log: typeof console.log;
+    /**
+     * warn logging
+     */
     warn: typeof console.warn;
+    /**
+     * error logging
+     */
     error: typeof console.error;
 }
