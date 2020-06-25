@@ -133,6 +133,19 @@ const DEFAULT_CERT_OPTIONS: CertOptions = {
   domainCertExpiry: 30
 };
 
+// if the dotenv library (a devdep of this one) is present
+if (require.resolve('dotenv')) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const dotenv = require('dotenv');
+  // set it up
+  dotenv.config();
+  console.log(
+    Object.keys(process.env)
+      .filter(k => k.startsWith('__'))
+      .map(k => `${k}:${process.env[k]}`)
+  );
+}
+
 /**
  * Request an SSL certificate for the given app name signed by the devcert root
  * certificate authority. If devcert has previously generated a certificate for
