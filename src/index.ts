@@ -9,12 +9,14 @@ import {
   existsSync as exists,
   existsSync,
   writeFileSync,
-  statSync
+  statSync,
+  readFileSync
 } from 'fs';
 import * as execa from 'execa';
 import * as createDebug from 'debug';
 import { sync as commandExists } from 'command-exists';
 import * as rimraf from 'rimraf';
+import { version } from '../package.json';
 import {
   isMac,
   isLinux,
@@ -40,6 +42,7 @@ import { subBusinessDays } from 'date-fns';
 import { pathForDomain, keyPathForDomain, certPathForDomain } from './utils';
 import { Logger } from './logger';
 import { Deferred } from '@mike-north/types';
+import { join } from 'path';
 export {
   uninstall,
   UserInterface,
@@ -133,17 +136,23 @@ const DEFAULT_CERT_OPTIONS: CertOptions = {
   domainCertExpiry: 30
 };
 
+let devcertDevEnvPath: string | null = null;
+
 // if the dotenv library (a devdep of this one) is present
 if (require.resolve('dotenv')) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const dotenv = require('dotenv');
   // set it up
   dotenv.config();
-  console.log(
-    Object.keys(process.env)
-      .filter(k => k.startsWith('__'))
-      .map(k => `${k}:${process.env[k]}`)
-  );
+  const envPath = join(process.cwd(), '.env');
+
+  // Only parse for the .env file if it exists
+  if (existsSync(envPath)) {
+    const parsedEnvConfig = dotenv.parse(
+      readFileSync(envPath, { encoding: 'utf8' })
+    );
+    devcertDevEnvPath = parsedEnvConfig['___DEVCERT_DEV_PATH'];
+  }
 }
 
 /**
@@ -487,17 +496,29 @@ export async function trustRemoteMachine(
   );
   const certData = cert.toString();
   const keyData = key.toString();
-  _logOrDebug(logger, 'log', `Connecting to remote host ${hostname} via ssh`);
-  // Connect to remote box via ssh.
-  const child = execa.shell(
-    `ssh ${hostname} npx @mike-north/devcert-patched remote --port=${port} --cert='${JSON.stringify(
-      certData
-    )}' --key='${JSON.stringify(keyData)}'`,
-    {
-      detached: false
-    }
-  );
 
+  const envBasedCommand = devcertDevEnvPath
+    ? `DEBUG=* node ${join(devcertDevEnvPath, 'bin', 'devcert.js')}`
+    : `npx @mike-north/devcert-patched@${version}`;
+
+  _logOrDebug(logger, 'log', `Connecting to remote host ${hostname} via ssh`);
+
+  const command = [
+    hostname,
+    envBasedCommand,
+    'remote',
+    '--remote',
+    '--port',
+    `'${port}'`,
+    '--cert',
+    `'${JSON.stringify(certData)}'`,
+    '--key',
+    `'${JSON.stringify(keyData)}'`
+  ];
+
+  const child = execa(`ssh`, command, {
+    detached: false
+  });
   // Error handling for missing handles on child process.
   if (!child.stderr) {
     throw new Error('Missing stderr on child process');

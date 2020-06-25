@@ -13,6 +13,7 @@
     "sourceRoot": ".",
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "resolveJsonModule": true,
     "esModuleInterop": false,
     "paths": {
       "*": ["types/*"]
