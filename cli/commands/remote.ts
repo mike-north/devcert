@@ -9,9 +9,8 @@ function assertIsPositiveInteger(
   label: string
 ): asserts arg is number {
   if (
-    typeof arg !== 'number' &&
+    typeof arg !== 'number' ||
     arg !== parseInt('' + arg) &&
-    typeof arg === 'number' &&
     arg <= 0
   )
     throw new Error(
