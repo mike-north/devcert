@@ -83,8 +83,8 @@ export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
 // @public @deprecated
 export function removeDomain(commonName: string): void;
 
-// @public
-export function trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate): Promise<{
+// @internal
+export function _trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate): Promise<{
     mustRenew: boolean;
 }>;
 
@@ -94,7 +94,7 @@ export function trustRemoteMachine(hostname: string, certPath: string, { port, r
 }>;
 
 // @internal
-export function _trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger, trustCertsOnRemoteFunc, closeRemoteFunc }?: Partial<TrustRemoteOptions>): Promise<boolean>;
+export function _trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger, closeRemoteFunc }?: Partial<TrustRemoteOptions>, trustCertsOnRemoteFunc?: typeof _trustCertsOnRemote): Promise<boolean>;
 
 // @public
 export interface TrustRemoteOptions {
@@ -102,7 +102,6 @@ export interface TrustRemoteOptions {
     logger?: Logger;
     port: number;
     renewalBufferInBusinessDays: number;
-    trustCertsOnRemoteFunc: typeof trustCertsOnRemote;
 }
 
 // @public

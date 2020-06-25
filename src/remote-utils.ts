@@ -3,6 +3,15 @@ import { rootCACertPath } from '../src/constants';
 import { Agent } from 'https';
 import * as fs from 'fs';
 
+if (!fs.existsSync(rootCACertPath)) {
+  throw new Error(`Public certificate file ${rootCACertPath} does not exist.`);
+}
+
+const rootCACertData = fs.readFileSync(rootCACertPath, { encoding: 'utf-8' });
+const agent = new Agent({
+  ca: rootCACertData
+});
+
 /**
  * Returns the remote box's certificate
  * @param hostname - hostname of the remote machine
@@ -14,9 +23,6 @@ export async function getRemoteCertificate(
   hostname: string,
   port: number
 ): Promise<string> {
-  const agent = new Agent({
-    ca: fs.readFileSync(rootCACertPath, { encoding: 'utf-8' })
-  });
   const response = await fetch(
     `https://${hostname}:${port}/get_remote_certificate`,
     { agent }
@@ -36,15 +42,14 @@ export async function closeRemoteServer(
   port: number
 ): Promise<string> {
   try {
-    const agent = new Agent({
-      ca: fs.readFileSync(rootCACertPath, { encoding: 'utf-8' })
-    });
     const response = await fetch(
       `https://${hostname}:${port}/close_remote_server`,
       { agent }
     );
     return await response.text();
   } catch (err) {
-    throw new Error(err);
+    throw new Error(
+      `The remote devcert server had trouble shutting down.\n${err}`
+    );
   }
 }

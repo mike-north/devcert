@@ -8,11 +8,7 @@ function assertIsPositiveInteger(
   arg: unknown,
   label: string
 ): asserts arg is number {
-  if (
-    typeof arg !== 'number' ||
-    arg !== parseInt('' + arg) &&
-    arg <= 0
-  )
+  if (typeof arg !== 'number' || (arg !== parseInt('' + arg) && arg <= 0))
     throw new Error(
       `expected ${label} to be a positive integer. Found: ${JSON.stringify(
         arg
@@ -27,9 +23,9 @@ function assertIsString(arg: unknown, label: string): asserts arg is string {
     );
 }
 
-const command = 'remote';
-const desc = 'Create an empty repo';
-const builder = (yarg: Argv): void => {
+export const command = 'remote';
+export const desc = 'Create an empty repo';
+export const builder = (yarg: Argv): void => {
   yarg.option('port', {
     describe: 'port number where the remote host should be connected',
     default: DEFAULT_REMOTE_PORT
@@ -43,7 +39,7 @@ const builder = (yarg: Argv): void => {
     required: true
   });
 };
-const handler = (argv: Arguments): void => {
+export const handler = (argv: Arguments): void => {
   const { port, cert, key } = argv;
   assertIsPositiveInteger(port, 'port');
   assertIsString(cert, 'cert');
@@ -80,4 +76,3 @@ const handler = (argv: Arguments): void => {
     });
   });
 };
-export { command, desc, builder, handler };

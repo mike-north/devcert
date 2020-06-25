@@ -20,5 +20,4 @@ export interface TrustRemoteOptions
 |  [logger](./devcert-patched.trustremoteoptions.logger.md) | <code>Logger</code> | Logger interface to suppport logging mechanism on the onsumer side. |
 |  [port](./devcert-patched.trustremoteoptions.port.md) | <code>number</code> | port number for the remote server. |
 |  [renewalBufferInBusinessDays](./devcert-patched.trustremoteoptions.renewalbufferinbusinessdays.md) | <code>number</code> | remaining business days validity. |
-|  [trustCertsOnRemoteFunc](./devcert-patched.trustremoteoptions.trustcertsonremotefunc.md) | <code>typeof trustCertsOnRemote</code> | function to trust certs on remote. |
 

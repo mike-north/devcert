@@ -396,10 +396,6 @@ export interface TrustRemoteOptions {
    */
   logger?: Logger;
   /**
-   * function to trust certs on remote.
-   */
-  trustCertsOnRemoteFunc: typeof trustCertsOnRemote;
-  /**
    * function to close the remote server.
    */
   closeRemoteFunc: typeof closeRemoteServer;
@@ -412,20 +408,15 @@ export interface TrustRemoteOptions {
  * @param port - port to connect the remote machine
  * @param certPath - file path to store the cert
  *
- * @public
+ * @internal
  */
-export async function trustCertsOnRemote(
+export async function _trustCertsOnRemote(
   hostname: string,
   port: number,
   certPath: string,
   renewalBufferInBusinessDays: number,
   getRemoteCertsFunc = getRemoteCertificate
 ): Promise<{ mustRenew: boolean }> {
-  if (!existsSync(certPath)) {
-    throw new Error(
-      `The certificate path ${certPath} to write the remote cert data on does not exist.`
-    );
-  }
   // Get the remote certificate from the server
   debug('getting cert from remote machine');
   const certData = await getRemoteCertsFunc(hostname, port);
@@ -447,7 +438,7 @@ export async function trustCertsOnRemote(
  * @public
  * @param hostname - hostname of the remote machine
  * @param certPath - file path to store the cert
- * @param param2 - TrustRemoteOptions options
+ * @param TrustRemoteOptions - TrustRemoteOptions options
  */
 export async function trustRemoteMachine(
   hostname: string,
@@ -495,15 +486,10 @@ export async function trustRemoteMachine(
       const stdErrData = data.toString().trim();
       debug(stdErrData);
       if (stdErrData.toLowerCase().includes('error')) {
-        debug('Error thrown on the remote side. Closing Remote server');
-    let errorMessage = `Problem while attempting to setup devcert remotely.\n${stdErrData}`;
-    try {
-       await closeRemoteServer(hostname, port);
-     } catch (err) {
-        errorMessage += `\n\nAlso, the remote devcert server had trouble shutting down.\n${err}`
-     }
-     throw new Error(errorMessage);
-        throw new Error(stdErrData);
+        closeRemoteServer(hostname, port);
+        throw new Error(
+          `Problem while attempting to setup devcert remotely.\n${stdErrData}`
+        );
       }
     } else {
       debug('Stderr: {}');
@@ -537,8 +523,6 @@ export async function trustRemoteMachine(
             );
             // return the certificate renewal state to the consumer to handle the
             // renewal usecase.
-            child.kill();
-            debug('child process killed');
             return { mustRenew };
           })
           .catch(err => {
@@ -565,7 +549,7 @@ export async function trustRemoteMachine(
  *
  * @param hostname - hostname of the remote machine
  * @param certPath - file path to store the cert
- * @param param2 - TrustRemoteOptions options
+ * @param TrustRemoteOptions - TrustRemoteOptions options
  *
  * @internal
  */
@@ -576,9 +560,9 @@ export async function _trustRemoteMachine(
     port = DEFAULT_REMOTE_PORT,
     renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
     logger,
-    trustCertsOnRemoteFunc = trustCertsOnRemote,
     closeRemoteFunc = closeRemoteServer
-  }: Partial<TrustRemoteOptions> = {}
+  }: Partial<TrustRemoteOptions> = {},
+  trustCertsOnRemoteFunc = _trustCertsOnRemote
 ): Promise<boolean> {
   try {
     _logOrDebug(
