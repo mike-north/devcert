@@ -18,7 +18,9 @@ function _getAgent(): Agent {
     ca: rootCACertData
   });
 }
+
 let _AGENT: Agent | null;
+
 function getAgent(): Agent {
   if (!_AGENT) _AGENT = _getAgent();
   return _AGENT;
@@ -37,7 +39,7 @@ export async function getRemoteCertificate(
 ): Promise<string> {
   const response = await fetch(
     `https://${hostname}:${port}/get_remote_certificate`,
-    { agent: _getAgent() }
+    { agent: getAgent() }
   );
   return await response.text();
 }
@@ -56,7 +58,7 @@ export async function closeRemoteServer(
   try {
     const response = await fetch(
       `https://${hostname}:${port}/close_remote_server`,
-      { agent: _getAgent() }
+      { agent: getAgent() }
     );
     return await response.text();
   } catch (err) {
