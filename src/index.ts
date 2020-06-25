@@ -496,7 +496,13 @@ export async function trustRemoteMachine(
       debug(stdErrData);
       if (stdErrData.toLowerCase().includes('error')) {
         debug('Error thrown on the remote side. Closing Remote server');
-        closeRemoteServer(hostname, port);
+    let errorMessage = `Problem while attempting to setup devcert remotely.\n${stdErrData}`;
+    try {
+       await closeRemoteServer(hostname, port);
+     } catch (err) {
+        errorMessage += `\n\nAlso, the remote devcert server had trouble shutting down.\n${err}`
+     }
+     throw new Error(errorMessage);
         throw new Error(stdErrData);
       }
     } else {
