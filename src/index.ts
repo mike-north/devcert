@@ -477,8 +477,7 @@ export async function trustRemoteMachine(
   _logOrDebug(logger, 'log', `Connecting to remote host ${hostname} via ssh`);
   // Connect to remote box via ssh.
   const child = execa.shell(
-    // @TODO Change this to npx
-    `ssh ${hostname} node devcert/bin/devcert.js remote --port=${port} --cert='${JSON.stringify(
+    `ssh ${hostname} npx @mike-north/devcert-patched remote --port=${port} --cert='${JSON.stringify(
       certData
     )}' --key='${JSON.stringify(keyData)}'`,
     {
