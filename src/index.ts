@@ -512,7 +512,7 @@ export async function trustRemoteMachine(
   );
   child.stdout.on('data', (data: execa.StdIOOption) => {
     if (data) {
-      const stdoutData = data.toString().trimRight();
+      const stdoutData = data.toString().trim();
       if (stdoutData.includes(`STATE: READY_FOR_CONNECTION`)) {
         _logOrDebug(
           logger,
