@@ -492,7 +492,7 @@ export async function trustRemoteMachine(
   // Throw any error that might have occurred on the remote side.
   child.stderr.on('data', (data: execa.StdIOOption) => {
     if (data) {
-      const stdErrData = data.toString().trimRight();
+      const stdErrData = data.toString().trim();
       debug(stdErrData);
       if (stdErrData.toLowerCase().includes('error')) {
         debug('Error thrown on the remote side. Closing Remote server');
