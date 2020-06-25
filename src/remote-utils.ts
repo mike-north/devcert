@@ -18,6 +18,11 @@ function _getAgent(): Agent {
     ca: rootCACertData
   });
 }
+let _AGENT: Agent | null;
+function getAgent(): Agent {
+  if (!_AGENT) _AGENT = _getAgent();
+  return _AGENT;
+}
 
 /**
  * Returns the remote box's certificate
