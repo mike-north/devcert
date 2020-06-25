@@ -84,7 +84,15 @@ export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
 export function removeDomain(commonName: string): void;
 
 // @internal
-export function _trustCertsOnRemote(hostname: string, port: number, certPath: string, renewalBufferInBusinessDays: number, getRemoteCertsFunc?: typeof getRemoteCertificate): Promise<{
+export function _trustCertsOnRemote(machineDetails: {
+    hostname: string;
+    port: number;
+    certPath: string;
+}, certDetails: {
+    renewalBufferInBusinessDays: number;
+}, injections?: {
+    getRemoteCertsFunc: typeof getRemoteCertificate;
+}): Promise<{
     mustRenew: boolean;
 }>;
 

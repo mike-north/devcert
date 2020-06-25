@@ -15,7 +15,10 @@ QUnit.module('trust remote machine tests', hooks => {
           return Promise.resolve('Server closed successfully');
         }
       },
-      (hostname, port, certpath, renewalBufferInBusinessDays) => {
+      (
+        { hostname, port, certPath: certpath },
+        { renewalBufferInBusinessDays }
+      ) => {
         assert.equal(hostname, 'foo.bar.biz', 'hostname passed to callback');
         assert.equal(port, 3333, 'port passed to callback');
         assert.equal(certpath, './tmp', 'certpath passed to callback');

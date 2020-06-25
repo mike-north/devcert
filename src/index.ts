@@ -411,23 +411,37 @@ export interface TrustRemoteOptions {
  * @internal
  */
 export async function _trustCertsOnRemote(
-  hostname: string,
-  port: number,
-  certPath: string,
-  renewalBufferInBusinessDays: number,
-  getRemoteCertsFunc = getRemoteCertificate
+  machineDetails: {
+    hostname: string;
+    port: number;
+    certPath: string;
+  },
+  certDetails: {
+    renewalBufferInBusinessDays: number;
+  },
+  injections = {
+    getRemoteCertsFunc: getRemoteCertificate
+  }
 ): Promise<{ mustRenew: boolean }> {
   // Get the remote certificate from the server
   debug('getting cert from remote machine');
-  const certData = await getRemoteCertsFunc(hostname, port);
-  const mustRenew = shouldRenew(certData, renewalBufferInBusinessDays);
-  debug(`writing the certificate data onto local file path: ${certPath}`);
+  const certData = await injections.getRemoteCertsFunc(
+    machineDetails.hostname,
+    machineDetails.port
+  );
+  const mustRenew = shouldRenew(
+    certData,
+    certDetails.renewalBufferInBusinessDays
+  );
+  debug(
+    `writing the certificate data onto local file path: ${machineDetails.certPath}`
+  );
 
   // Write the certificate data on this file.
-  writeFileSync(certPath, certData);
+  writeFileSync(machineDetails.certPath, certData);
 
   // Trust the remote cert on your local box
-  await currentPlatform.addToTrustStores(certPath);
+  await currentPlatform.addToTrustStores(machineDetails.certPath);
   debug('Certificate trusted successfully');
   return { mustRenew };
 }
@@ -572,10 +586,10 @@ export async function _trustRemoteMachine(
     );
     // Trust the certs
     const { mustRenew } = await trustCertsOnRemoteFunc(
-      hostname,
-      port,
-      certPath,
-      renewalBufferInBusinessDays
+      { hostname, port, certPath },
+      {
+        renewalBufferInBusinessDays
+      }
     );
     _logOrDebug(logger, 'log', 'Certificate trusted successfully');
     // return the certificate renewal state to the consumer to handle the
