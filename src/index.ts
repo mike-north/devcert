@@ -138,20 +138,27 @@ const DEFAULT_CERT_OPTIONS: CertOptions = {
 
 let devcertDevEnvPath: string | null = null;
 
-// if the dotenv library (a devdep of this one) is present
-if (require.resolve('dotenv')) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const dotenv = require('dotenv');
-  // set it up
-  dotenv.config();
-  const envPath = join(process.cwd(), '.env');
+try {
+  // if the dotenv library (a devdep of this one) is present
+  if (require.resolve('dotenv')) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const dotenv = require('dotenv');
+    // set it up
+    dotenv.config();
+    const envPath = join(process.cwd(), '.env');
 
-  // Only parse for the .env file if it exists
-  if (existsSync(envPath)) {
-    const parsedEnvConfig = dotenv.parse(
-      readFileSync(envPath, { encoding: 'utf8' })
-    );
-    devcertDevEnvPath = parsedEnvConfig['___DEVCERT_DEV_PATH'];
+    // Only parse for the .env file if it exists
+    if (existsSync(envPath)) {
+      const parsedEnvConfig = dotenv.parse(
+        readFileSync(envPath, { encoding: 'utf8' })
+      );
+      devcertDevEnvPath = parsedEnvConfig['___DEVCERT_DEV_PATH'];
+    }
+  }
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') {
+    // Re-throw not "Module not found" errors
+    throw err;
   }
 }
 
