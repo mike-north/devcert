@@ -26,6 +26,9 @@ export interface CertOptions {
     domainCertExpiry: number;
 }
 
+// @public
+export function closeRemoteServer(hostname: string, port: number): Promise<string>;
+
 // @alpha
 export function configuredDomains(): string[];
 
@@ -43,6 +46,9 @@ export function getCertExpirationInfo(commonName: string, renewalBufferInBusines
 };
 
 // @public
+export function getRemoteCertificate(hostname: string, port: number): Promise<string>;
+
+// @public
 export function hasCertificateFor(commonName: string): boolean;
 
 // @public
@@ -53,6 +59,13 @@ export type IReturnCaPath<O extends Options> = O['getCaPath'] extends true ? CaP
 
 // @public
 export type IReturnData<O extends Options = {}> = DomainData & IReturnCa<O> & IReturnCaPath<O>;
+
+// @public
+export interface Logger {
+    error: typeof console.error;
+    log: typeof console.log;
+    warn: typeof console.warn;
+}
 
 // @public
 export interface Options {
@@ -70,8 +83,40 @@ export function removeAndRevokeDomainCert(commonName: string): Promise<void>;
 // @public @deprecated
 export function removeDomain(commonName: string): void;
 
+// @internal
+export function _trustCertsOnRemote(machineDetails: {
+    hostname: string;
+    port: number;
+    certPath: string;
+}, certDetails: {
+    renewalBufferInBusinessDays: number;
+}, injections?: {
+    getRemoteCertsFunc: typeof getRemoteCertificate;
+}): Promise<{
+    mustRenew: boolean;
+}>;
+
+// @public
+export function trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger }?: Partial<TrustRemoteOptions>): Promise<{
+    mustRenew: boolean;
+}>;
+
+// @internal
+export function _trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger, closeRemoteFunc }?: Partial<TrustRemoteOptions>, trustCertsOnRemoteFunc?: typeof _trustCertsOnRemote): Promise<boolean>;
+
+// @public
+export interface TrustRemoteOptions {
+    closeRemoteFunc: typeof closeRemoteServer;
+    logger?: Logger;
+    port: number;
+    renewalBufferInBusinessDays: number;
+}
+
 // @public
 export function uninstall(): void;
+
+// @public
+export function untrustMachineByCertificate(certPath: string): void;
 
 // @public
 export interface UserInterface {

@@ -24,6 +24,8 @@ export const configPath: (...pathSegments: string[]) => string = path.join.bind(
   configDir
 );
 
+export const DEFAULT_REMOTE_PORT = 2702;
+
 export const domainsDir = configPath('domains');
 
 export const caVersionFile = configPath('devcert-ca-version');
@@ -35,9 +37,13 @@ export const opensslDatabaseFilePath = configPath(
   'certificate-authority',
   'index.txt'
 );
-export const caSelfSignConfig = path.join(
+export const opensslConfigDir = path.join(
   __dirname,
-  '../openssl-configurations/certificate-authority-self-signing.conf'
+  '../../openssl-configurations/'
+);
+export const caSelfSignConfig = path.join(
+  opensslConfigDir,
+  'certificate-authority-self-signing.conf'
 );
 
 function includeWildcards(list: string[]): string[] {
@@ -58,10 +64,7 @@ export async function withDomainSigningRequestConfig(
     'domain-certificate-signing-requests.conf'
   );
   const source = readFile(
-    path.join(
-      __dirname,
-      '../openssl-configurations/domain-certificate-signing-requests.conf'
-    ),
+    path.join(opensslConfigDir, 'domain-certificate-signing-requests.conf'),
     'utf-8'
   );
   const template = makeTemplate(source);
@@ -83,7 +86,7 @@ export async function withDomainCertificateConfig(
   const tmp = tmpDir();
   const tmpFile = path.join(tmp.name, 'ca.cfg');
   const source = readFile(
-    path.join(__dirname, '../openssl-configurations/domain-certificates.conf'),
+    path.join(opensslConfigDir, 'domain-certificates.conf'),
     'utf-8'
   );
   const template = makeTemplate(source);

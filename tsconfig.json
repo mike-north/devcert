@@ -13,10 +13,11 @@
     "sourceRoot": ".",
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "resolveJsonModule": true,
     "esModuleInterop": false,
     "paths": {
       "*": ["types/*"]
     }
   },
-  "include": ["src"]
+  "include": ["cli", "src"]
 }
