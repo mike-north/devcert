@@ -1,6 +1,6 @@
 {
   "name": "@mike-north/devcert-patched",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Generate trusted local SSL/TLS certificates for local SSL development",
   "main": "dist/src/index.js",
   "types": "dist/devcert-patched.d.ts",
