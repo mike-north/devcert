@@ -496,16 +496,23 @@ export async function trustRemoteMachine(
   );
   const certData = cert.toString();
   const keyData = key.toString();
-
-  const envBasedCommand = devcertDevEnvPath
-    ? `DEBUG=* node ${join(devcertDevEnvPath, 'bin', 'devcert.js')}`
-    : `npx @mike-north/devcert-patched@${version}`;
+  let devcertCLICommand = `npx @mike-north/devcert-patched@${version}`;
+  if (devcertDevEnvPath) {
+    debug(
+      `Found ___DEVCERT_DEV_PATH as an environment variable, running in dev mode with ${devcertDevEnvPath} as the location of devcert on the remote machine`
+    );
+    devcertCLICommand = `DEBUG=* node ${join(
+      devcertDevEnvPath,
+      'bin',
+      'devcert.js'
+    )}`;
+  }
 
   _logOrDebug(logger, 'log', `Connecting to remote host ${hostname} via ssh`);
 
   const command = [
     hostname,
-    envBasedCommand,
+    devcertCLICommand,
     'remote',
     '--remote',
     '--port',
