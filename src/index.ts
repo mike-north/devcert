@@ -506,7 +506,7 @@ export async function trustRemoteMachine(
   const keyData = key.toString();
   const host = useLocalhostForRemote ? 'localhost' : hostname;
   debug(`Using ${host} to connect to the remote server`);
-  
+
   let devcertCLICommand = `npx @mike-north/devcert-patched@${version}`;
   if (devcertDevEnvPath) {
     debug(
