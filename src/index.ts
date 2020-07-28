@@ -417,6 +417,10 @@ export interface TrustRemoteOptions {
    */
   port: number;
   /**
+   * use localhost for connecting to remote server
+   */
+  useLocalhostForRemote: boolean;
+  /**
    * remaining business days validity.
    */
   renewalBufferInBusinessDays: number;
@@ -488,21 +492,21 @@ export async function trustRemoteMachine(
   certPath: string,
   {
     port = DEFAULT_REMOTE_PORT,
+    useLocalhostForRemote = false,
     renewalBufferInBusinessDays = REMAINING_BUSINESS_DAYS_VALIDITY_BEFORE_RENEW,
     logger
   }: Partial<TrustRemoteOptions> = {}
 ): Promise<{ mustRenew: boolean }> {
   debug('fetching/generating domain cert data for connecting to remote');
   const returnInfo = new Deferred<{ mustRenew: boolean }>();
-  const { cert, key } = await certificateFor(
-    'devcert-domain-cert',
-    [hostname],
-    {
-      skipHostsFile: true
-    }
-  );
+  const { cert, key } = await certificateFor('localhost', [hostname], {
+    skipHostsFile: true
+  });
   const certData = cert.toString();
   const keyData = key.toString();
+  const host = useLocalhostForRemote ? 'localhost' : hostname;
+  debug(`Using ${host} to connect to the remote server`);
+
   let devcertCLICommand = `npx @mike-north/devcert-patched@${version}`;
   if (devcertDevEnvPath) {
     debug(
@@ -547,7 +551,7 @@ export async function trustRemoteMachine(
       const stdErrData = data.toString().trim();
       debug(stdErrData);
       if (stdErrData.toLowerCase().includes('error')) {
-        closeRemoteServer(hostname, port);
+        closeRemoteServer(host, port);
         throw new Error(
           `Problem while attempting to setup devcert remotely.\n${stdErrData}`
         );
@@ -573,7 +577,7 @@ export async function trustRemoteMachine(
           `Connected to remote host ${hostname} via ssh successfully`
         );
         // Once certs are trusted, close the remote server and cleanup.
-        _trustRemoteMachine(hostname, certPath, {
+        _trustRemoteMachine(host, certPath, {
           port,
           renewalBufferInBusinessDays,
           logger

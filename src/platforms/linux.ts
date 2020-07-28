@@ -37,6 +37,7 @@ async function determineLinuxFlavor(
   const distro = await distroPromise;
   switch (distro) {
     case 'Red Hat Enterprise Linux Workstation':
+    case 'Red Hat Enterprise Linux Server':
       return { flav: LinuxFlavor.Rhel7 };
     case 'Ubuntu':
       return { flav: LinuxFlavor.Ubuntu };

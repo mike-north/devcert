@@ -97,7 +97,7 @@ export function _trustCertsOnRemote(machineDetails: {
 }>;
 
 // @public
-export function trustRemoteMachine(hostname: string, certPath: string, { port, renewalBufferInBusinessDays, logger }?: Partial<TrustRemoteOptions>): Promise<{
+export function trustRemoteMachine(hostname: string, certPath: string, { port, useLocalhostForRemote, renewalBufferInBusinessDays, logger }?: Partial<TrustRemoteOptions>): Promise<{
     mustRenew: boolean;
 }>;
 
@@ -110,6 +110,7 @@ export interface TrustRemoteOptions {
     logger?: Logger;
     port: number;
     renewalBufferInBusinessDays: number;
+    useLocalhostForRemote: boolean;
 }
 
 // @public
