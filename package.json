@@ -1,6 +1,6 @@
 {
   "name": "@mike-north/devcert-patched",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "description": "Generate trusted local SSL/TLS certificates for local SSL development",
   "main": "dist/src/index.js",
   "types": "dist/devcert-patched.d.ts",
@@ -79,7 +79,7 @@
     "prettier": "^1.19.1",
     "qunit": "^2.10.0",
     "sinon": "^9.2.4",
-    "standard-version": "^4.3.0",
+    "standard-version": "^9.1.1",
     "typescript": "^3.7.5"
   },
   "dependencies": {
@@ -108,10 +108,10 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "node": "8.10 - 8.17 || 10.* || >= 12.*"
+    "node": "10.* || >= 12.*"
   },
   "volta": {
-    "node": "8.11.1",
+    "node": "10.24.0",
     "yarn": "1.21.1"
   }
 }
