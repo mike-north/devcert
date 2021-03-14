@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { rootCACertPath } from '../src/constants';
+import { ROOT_CA_CERT_PATH } from '../src/constants';
 import { Agent } from 'https';
 import * as fs from 'fs';
 
@@ -7,12 +7,14 @@ import * as fs from 'fs';
  * Returns the agent for fetch requests.
  */
 function _getAgent(): Agent {
-  if (!fs.existsSync(rootCACertPath)) {
+  if (!fs.existsSync(ROOT_CA_CERT_PATH)) {
     throw new Error(
-      `Public certificate file ${rootCACertPath} does not exist.`
+      `Public certificate file ${ROOT_CA_CERT_PATH} does not exist.`
     );
   }
-  const rootCACertData = fs.readFileSync(rootCACertPath, { encoding: 'utf-8' });
+  const rootCACertData = fs.readFileSync(ROOT_CA_CERT_PATH, {
+    encoding: 'utf-8'
+  });
 
   return new Agent({
     ca: rootCACertData

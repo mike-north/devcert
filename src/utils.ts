@@ -7,7 +7,7 @@ import * as execa from 'execa';
 import * as assert from 'assert';
 import * as chalk from 'chalk';
 
-import { configPath, domainsDir } from './constants';
+import { makeConfigPath, DOMAINS_DIR } from './constants';
 import { existsSync } from 'fs';
 
 const debug = createDebug('devcert:util');
@@ -18,7 +18,7 @@ export function openssl(cmd: string, description: string): string {
       stdio: 'pipe',
       env: Object.assign(
         {
-          RANDFILE: path.join(configPath('.rnd'))
+          RANDFILE: path.join(makeConfigPath('.rnd'))
         },
         process.env
       )
@@ -85,9 +85,9 @@ export function pathForDomain(
   domain: string,
   ...pathSegments: string[]
 ): string {
-  assert(typeof domainsDir === 'string', 'domainsDir must be a string');
-  assert(domainsDir.length > 0, 'domainsDir must be > 0 length');
-  return path.join(domainsDir, domain, ...pathSegments);
+  assert(typeof DOMAINS_DIR === 'string', 'domainsDir must be a string');
+  assert(DOMAINS_DIR.length > 0, 'domainsDir must be > 0 length');
+  return path.join(DOMAINS_DIR, domain, ...pathSegments);
 }
 
 export function certPathForDomain(commonName: string): string {

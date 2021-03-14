@@ -18,12 +18,12 @@ import { sync as commandExists } from 'command-exists';
 import * as rimraf from 'rimraf';
 import { version } from '../package.json';
 import {
-  isMac,
-  isLinux,
-  isWindows,
-  domainsDir,
-  rootCAKeyPath,
-  rootCACertPath,
+  IS_MAC,
+  IS_LINUX,
+  IS_WINDOWS,
+  DOMAINS_DIR,
+  ROOT_CA_KEY_PATH,
+  ROOT_CA_CERT_PATH,
   DEFAULT_REMOTE_PORT
 } from './constants';
 import currentPlatform from './platforms';
@@ -320,7 +320,7 @@ async function certificateForImpl<
     Object.assign(UI, options.ui);
   }
 
-  if (!isMac && !isLinux && !isWindows) {
+  if (!IS_MAC && !IS_LINUX && !IS_WINDOWS) {
     throw new Error(`Platform not supported: "${process.platform}"`);
   }
 
@@ -333,7 +333,7 @@ async function certificateForImpl<
   const domainKeyPath = keyPathForDomain(commonName);
   const domainCertPath = certPathForDomain(commonName);
 
-  if (!exists(rootCAKeyPath)) {
+  if (!exists(ROOT_CA_KEY_PATH)) {
     debug(
       'Root CA is not installed yet, so it must be our first run. Installing root CA ...'
     );
@@ -389,8 +389,9 @@ async function certificateForImpl<
     cert: readFile(domainCertPath)
   } as IReturnData<O>;
   if (options.getCaBuffer)
-    ((ret as unknown) as CaBuffer).ca = readFile(rootCACertPath);
-  if (options.getCaPath) ((ret as unknown) as CaPath).caPath = rootCACertPath;
+    ((ret as unknown) as CaBuffer).ca = readFile(ROOT_CA_CERT_PATH);
+  if (options.getCaPath)
+    ((ret as unknown) as CaPath).caPath = ROOT_CA_CERT_PATH;
 
   return ret;
 }
@@ -677,7 +678,7 @@ export function hasCertificateFor(commonName: string): boolean {
  * @alpha
  */
 export function configuredDomains(): string[] {
-  return readdir(domainsDir);
+  return readdir(DOMAINS_DIR);
 }
 
 /**
