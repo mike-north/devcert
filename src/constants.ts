@@ -12,6 +12,19 @@ import applicationConfigPath = require('application-config-path');
 import * as _createDebug from 'debug';
 
 const debug = _createDebug('devcert:constants');
+// ENV switches
+export const DEVCERT_SKIP_POST_CA_REMOVAL_COMMANDS: boolean =
+  process.env['DEVCERT_SKIP_POST_CA_REMOVAL_COMMANDS'] === 'true';
+export const DEVCERT_SKIP_POST_CA_PLACEMENT_COMMANDS: boolean =
+  process.env['DEVCERT_SKIP_POST_CA_PLACEMENT_COMMANDS'] === 'true';
+export const DEVCERT_SKIP_COPY_CA_TO_TRUST_ROOTS: boolean =
+  process.env['DEVCERT_SKIP_COPY_CA_TO_TRUST_ROOTS'] === 'true';
+
+// ENV config
+export const DEVCERT_CUSTOM_CA_ROOT_FOLDERS =
+  typeof process.env['DEVCERT_CUSTOM_CA_ROOT_FOLDER'] === 'string'
+    ? process.env['DEVCERT_CUSTOM_CA_ROOT_FOLDER'].split(/\s*,\s*/g)
+    : undefined;
 
 // Platform shortcuts
 export const IS_MAC = process.platform === 'darwin';

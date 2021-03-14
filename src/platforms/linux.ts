@@ -21,10 +21,18 @@ import UI from '../user-interface';
 import { Platform } from '.';
 import * as si from 'systeminformation';
 import { UnreachableError } from '../errors';
+import {
+  DEVCERT_SKIP_POST_CA_PLACEMENT_COMMANDS,
+  DEVCERT_SKIP_POST_CA_REMOVAL_COMMANDS,
+  DEVCERT_CUSTOM_CA_ROOT_FOLDERS
+} from '../constants';
 
 const debug = createDebug('devcert:platforms:linux');
-
-enum LinuxFlavor {
+/**
+ * Linux distro indicator
+ * @internal
+ */
+export enum LinuxFlavor {
   Unknown = 0,
   Ubuntu,
   Rhel7,
@@ -62,48 +70,78 @@ interface LinuxFlavorDetails {
   postCaRemovalCommands: Cmd[];
 }
 
-function linuxFlavorDetails(
-  flavor: Exclude<LinuxFlavor, LinuxFlavor.Unknown>
+/**
+ * Determine the per-distro cert generation parameters for a given linux distro
+ *
+ * @param flavor linux distro
+ * @param options options (mostly intended for dependency injection in tests)
+ *
+ * @internal
+ */
+export function linuxFlavorDetails(
+  flavor: Exclude<LinuxFlavor, LinuxFlavor.Unknown>,
+  options: {
+    customCaRoots?: string[];
+    omitPostCaPlacementCommands?: boolean;
+    omitPostCaRemovalCommands?: boolean;
+  } = {
+    customCaRoots: DEVCERT_CUSTOM_CA_ROOT_FOLDERS,
+    omitPostCaPlacementCommands: DEVCERT_SKIP_POST_CA_PLACEMENT_COMMANDS,
+    omitPostCaRemovalCommands: DEVCERT_SKIP_POST_CA_REMOVAL_COMMANDS
+  }
 ): LinuxFlavorDetails {
+  const {
+    omitPostCaPlacementCommands,
+    omitPostCaRemovalCommands,
+    customCaRoots
+  } = options;
   switch (flavor) {
     case LinuxFlavor.Rhel7:
     case LinuxFlavor.Fedora:
       return {
-        caFolders: [
+        caFolders: customCaRoots || [
           '/etc/pki/ca-trust/source/anchors',
           '/usr/share/pki/ca-trust-source'
         ],
-        postCaPlacementCommands: [
-          {
-            command: 'sudo',
-            args: ['update-ca-trust']
-          }
-        ],
-        postCaRemovalCommands: [
-          {
-            command: 'sudo',
-            args: ['update-ca-trust']
-          }
-        ]
+        postCaPlacementCommands: omitPostCaPlacementCommands
+          ? []
+          : [
+              {
+                command: 'sudo',
+                args: ['update-ca-trust']
+              }
+            ],
+        postCaRemovalCommands: omitPostCaRemovalCommands
+          ? []
+          : [
+              {
+                command: 'sudo',
+                args: ['update-ca-trust']
+              }
+            ]
       };
     case LinuxFlavor.Ubuntu:
       return {
-        caFolders: [
+        caFolders: customCaRoots || [
           '/etc/pki/ca-trust/source/anchors',
           '/usr/local/share/ca-certificates'
         ],
-        postCaPlacementCommands: [
-          {
-            command: 'sudo',
-            args: ['update-ca-certificates']
-          }
-        ],
-        postCaRemovalCommands: [
-          {
-            command: 'sudo',
-            args: ['update-ca-certificates']
-          }
-        ]
+        postCaPlacementCommands: omitPostCaPlacementCommands
+          ? []
+          : [
+              {
+                command: 'sudo',
+                args: ['update-ca-certificates']
+              }
+            ],
+        postCaRemovalCommands: omitPostCaRemovalCommands
+          ? []
+          : [
+              {
+                command: 'sudo',
+                args: ['update-ca-certificates']
+              }
+            ]
       };
 
     default:
