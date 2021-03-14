@@ -1,5 +1,5 @@
 import { Argv, Arguments } from 'yargs';
-import { rootCACertPath, DEFAULT_REMOTE_PORT } from '../../src/constants';
+import { ROOT_CA_CERT_PATH, DEFAULT_REMOTE_PORT } from '../../src/constants';
 import * as express from 'express';
 import * as https from 'https';
 import * as fs from 'fs';
@@ -50,12 +50,12 @@ export const handler = (argv: Arguments): void => {
     cert: cert.replace(/\\n/g, '\n')
   };
   app.get('/get_remote_certificate', (req, res) => {
-    if (!fs.existsSync(rootCACertPath)) {
+    if (!fs.existsSync(ROOT_CA_CERT_PATH)) {
       throw new Error(
-        `Could not read the public certificate file ${rootCACertPath}, please check the file exists and try again.`
+        `Could not read the public certificate file ${ROOT_CA_CERT_PATH}, please check the file exists and try again.`
       );
     }
-    res.send(fs.readFileSync(rootCACertPath, 'utf8'));
+    res.send(fs.readFileSync(ROOT_CA_CERT_PATH, 'utf8'));
   });
 
   const httpsServer = https.createServer(credentials, app);

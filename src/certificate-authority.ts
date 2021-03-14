@@ -6,16 +6,16 @@ import {
 import * as createDebug from 'debug';
 
 import {
-  domainsDir,
-  rootCADir,
+  DOMAINS_DIR,
+  ROOT_CA_DIR,
   ensureConfigDirs,
   getLegacyConfigDir,
-  rootCAKeyPath,
-  rootCACertPath,
-  caSelfSignConfig,
-  opensslSerialFilePath,
-  opensslDatabaseFilePath,
-  caVersionFile
+  ROOT_CA_KEY_PATH,
+  ROOT_CA_CERT_PATH,
+  CA_SELF_SIGN_CONFIG_PATH,
+  OPENSSL_SERIAL_FILE_PATH,
+  OPENSSL_DB_PATH,
+  CA_VERSION_FILE_PATH
 } from './constants';
 import currentPlatform from './platforms';
 import { openssl, tmpDir } from './utils';
@@ -53,7 +53,7 @@ export default async function installCertificateAuthority(
 
   debug(`Generating a CA certificate`);
   openssl(
-    `req -new -x509 -config "${caSelfSignConfig}" -key "${rootKeyPath}" -out "${rootCACertPath}" -days ${certOptions.caCertExpiry}`,
+    `req -new -x509 -config "${CA_SELF_SIGN_CONFIG_PATH}" -key "${rootKeyPath}" -out "${ROOT_CA_CERT_PATH}" -days ${certOptions.caCertExpiry}`,
     'generating CA CSR'
   );
 
@@ -61,7 +61,7 @@ export default async function installCertificateAuthority(
   await saveCertificateAuthorityCredentials(rootKeyPath);
 
   debug(`Adding the root certificate authority to trust stores`);
-  await currentPlatform.addToTrustStores(rootCACertPath, options);
+  await currentPlatform.addToTrustStores(ROOT_CA_CERT_PATH, options);
 }
 
 /**
@@ -70,10 +70,10 @@ export default async function installCertificateAuthority(
  */
 function seedConfigFiles(): void {
   // This is v2 of the devcert certificate authority setup
-  writeFile(caVersionFile, '2');
+  writeFile(CA_VERSION_FILE_PATH, '2');
   // OpenSSL CA files
-  writeFile(opensslDatabaseFilePath, '');
-  writeFile(opensslSerialFilePath, '01');
+  writeFile(OPENSSL_DB_PATH, '');
+  writeFile(OPENSSL_SERIAL_FILE_PATH, '01');
 }
 
 export async function withCertificateAuthorityCredentials(
@@ -89,8 +89,8 @@ export async function withCertificateAuthorityCredentials(
   const tmp = tmpDir();
   const caKeyPath = join(tmp.name, 'ca.key');
   const caCertPath = join(caKeyPath, '..', 'ca.crt');
-  const caKey = await currentPlatform.readProtectedFile(rootCAKeyPath);
-  const caCrt = await currentPlatform.readProtectedFile(rootCACertPath);
+  const caKey = await currentPlatform.readProtectedFile(ROOT_CA_KEY_PATH);
+  const caCrt = await currentPlatform.readProtectedFile(ROOT_CA_CERT_PATH);
   writeFile(caKeyPath, caKey);
   writeFile(caCertPath, caCrt);
   await cb({ caKeyPath, caCertPath });
@@ -104,13 +104,13 @@ async function saveCertificateAuthorityCredentials(
 ): Promise<void> {
   debug(`Saving devcert's certificate authority credentials`);
   const key = readFile(keypath, 'utf-8');
-  await currentPlatform.writeProtectedFile(rootCAKeyPath, key);
+  await currentPlatform.writeProtectedFile(ROOT_CA_KEY_PATH, key);
 }
 
 function certErrors(): string {
   try {
     openssl(
-      `x509 -in "${rootCACertPath}" -noout`,
+      `x509 -in "${ROOT_CA_CERT_PATH}" -noout`,
       'checking for certificate errors'
     );
     return '';
@@ -143,10 +143,10 @@ export async function ensureCACertReadable(
    */
   try {
     const caFileContents = await currentPlatform.readProtectedFile(
-      rootCACertPath
+      ROOT_CA_CERT_PATH
     );
-    currentPlatform.deleteProtectedFiles(rootCACertPath);
-    writeFile(rootCACertPath, caFileContents);
+    currentPlatform.deleteProtectedFiles(ROOT_CA_CERT_PATH);
+    writeFile(ROOT_CA_CERT_PATH, caFileContents);
   } catch (e) {
     return installCertificateAuthority(options, certOptions);
   }
@@ -174,8 +174,8 @@ export async function ensureCACertReadable(
  * @public
  */
 export function uninstall(): void {
-  currentPlatform.removeFromTrustStores(rootCACertPath);
-  currentPlatform.deleteProtectedFiles(domainsDir);
-  currentPlatform.deleteProtectedFiles(rootCADir);
+  currentPlatform.removeFromTrustStores(ROOT_CA_CERT_PATH);
+  currentPlatform.deleteProtectedFiles(DOMAINS_DIR);
+  currentPlatform.deleteProtectedFiles(ROOT_CA_DIR);
   currentPlatform.deleteProtectedFiles(getLegacyConfigDir());
 }

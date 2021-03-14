@@ -8,19 +8,23 @@ import { existsSync } from 'fs';
 import { sync as glob } from 'glob';
 import { readFileSync as readFile, existsSync as exists } from 'fs';
 import { run } from '../utils';
-import { isMac, isLinux, configDir, getLegacyConfigDir } from '../constants';
+import { IS_MAC, IS_LINUX, CONFIG_DIR, getLegacyConfigDir } from '../constants';
 import UI from '../user-interface';
 import { execSync as exec } from 'child_process';
-
+import { homedir } from 'os';
 const debug = createDebug('devcert:platforms:shared');
 
-export const HOME = process.env.HOME
-  ? process.env.HOME
-  : (function(): never {
-      throw new Error(
-        'HOME environment variable was not set. It should be something like "/Users/exampleName"'
-      );
-    })();
+function determineHomeDir(): string {
+  if (process.env.HOME) return process.env.HOME;
+  if (typeof process.env.HOME !== 'undefined') {
+    throw new Error(
+      'HOME environment variable was not set. It should be something like "/Users/exampleName"'
+    );
+  }
+  return homedir();
+}
+
+export const HOME = determineHomeDir();
 
 /**
  *  Given a directory or glob pattern of directories, run a callback for each db
@@ -120,7 +124,7 @@ function isFirefoxOpen(): boolean {
   // never needs to check this, because it doesn't update the NSS DB
   // automaticaly.
   assert(
-    isMac || isLinux,
+    IS_MAC || IS_LINUX,
     'checkForOpenFirefox was invoked on a platform other than Mac or Linux'
   );
   return exec('ps aux').indexOf('firefox') > -1;
@@ -193,7 +197,7 @@ export function assertNotTouchingFiles(
   operation: string
 ): void {
   if (
-    !filepath.startsWith(configDir) &&
+    !filepath.startsWith(CONFIG_DIR) &&
     !filepath.startsWith(getLegacyConfigDir())
   ) {
     throw new Error(

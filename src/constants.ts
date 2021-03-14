@@ -12,37 +12,38 @@ import applicationConfigPath = require('application-config-path');
 import * as _createDebug from 'debug';
 
 const debug = _createDebug('devcert:constants');
+
 // Platform shortcuts
-export const isMac = process.platform === 'darwin';
-export const isLinux = process.platform === 'linux';
-export const isWindows = process.platform === 'win32';
+export const IS_MAC = process.platform === 'darwin';
+export const IS_LINUX = process.platform === 'linux';
+export const IS_WINDOWS = process.platform === 'win32';
 
 // Common paths
-export const configDir = applicationConfigPath('devcert');
-export const configPath: (...pathSegments: string[]) => string = path.join.bind(
-  path,
-  configDir
-);
+export const CONFIG_DIR = applicationConfigPath('devcert');
+
+export const makeConfigPath: (
+  ...pathSegments: string[]
+) => string = path.join.bind(path, CONFIG_DIR);
 
 export const DEFAULT_REMOTE_PORT = 2702;
 
-export const domainsDir = configPath('domains');
+export const DOMAINS_DIR = makeConfigPath('domains');
 
-export const caVersionFile = configPath('devcert-ca-version');
-export const opensslSerialFilePath = configPath(
+export const CA_VERSION_FILE_PATH = makeConfigPath('devcert-ca-version');
+export const OPENSSL_SERIAL_FILE_PATH = makeConfigPath(
   'certificate-authority',
   'serial'
 );
-export const opensslDatabaseFilePath = configPath(
+export const OPENSSL_DB_PATH = makeConfigPath(
   'certificate-authority',
   'index.txt'
 );
-export const opensslConfigDir = path.join(
+export const OPENSSL_CONFIG_DIR = path.join(
   __dirname,
   '../../openssl-configurations/'
 );
-export const caSelfSignConfig = path.join(
-  opensslConfigDir,
+export const CA_SELF_SIGN_CONFIG_PATH = path.join(
+  OPENSSL_CONFIG_DIR,
   'certificate-authority-self-signing.conf'
 );
 
@@ -64,7 +65,7 @@ export async function withDomainSigningRequestConfig(
     'domain-certificate-signing-requests.conf'
   );
   const source = readFile(
-    path.join(opensslConfigDir, 'domain-certificate-signing-requests.conf'),
+    path.join(OPENSSL_CONFIG_DIR, 'domain-certificate-signing-requests.conf'),
     'utf-8'
   );
   const template = makeTemplate(source);
@@ -86,15 +87,15 @@ export async function withDomainCertificateConfig(
   const tmp = tmpDir();
   const tmpFile = path.join(tmp.name, 'ca.cfg');
   const source = readFile(
-    path.join(opensslConfigDir, 'domain-certificates.conf'),
+    path.join(OPENSSL_CONFIG_DIR, 'domain-certificates.conf'),
     'utf-8'
   );
   const template = makeTemplate(source);
   const result = template({
     commonName,
     altNames: includeWildcards([commonName, ...alternativeNames]),
-    serialFile: opensslSerialFilePath,
-    databaseFile: opensslDatabaseFilePath,
+    serialFile: OPENSSL_SERIAL_FILE_PATH,
+    databaseFile: OPENSSL_DB_PATH,
     domainDir: pathForDomain(commonName)
   });
   writeFile(tmpFile, eol.auto(result));
@@ -107,22 +108,22 @@ export async function withDomainCertificateConfig(
 // confTemplate = confTemplate.replace(/SERIAL_PATH/, configPath('serial').replace(/\\/g, '\\\\'));
 // confTemplate = eol.auto(confTemplate);
 
-export const rootCADir = configPath('certificate-authority');
-export const rootCAKeyPath = path.join(rootCADir, 'private-key.key');
-export const rootCACertPath = path.join(rootCADir, 'certificate.cert');
+export const ROOT_CA_DIR = makeConfigPath('certificate-authority');
+export const ROOT_CA_KEY_PATH = path.join(ROOT_CA_DIR, 'private-key.key');
+export const ROOT_CA_CERT_PATH = path.join(ROOT_CA_DIR, 'certificate.cert');
 
-debug('rootCACertPath', rootCACertPath);
-debug('rootCAKeyPath', rootCAKeyPath);
-debug('rootCADir', rootCADir);
+debug('rootCACertPath', ROOT_CA_CERT_PATH);
+debug('rootCAKeyPath', ROOT_CA_KEY_PATH);
+debug('rootCADir', ROOT_CA_DIR);
 
 // Exposed for uninstallation purposes.
 export function getLegacyConfigDir(): string {
-  if (isWindows && process.env.LOCALAPPDATA) {
+  if (IS_WINDOWS && process.env.LOCALAPPDATA) {
     return path.join(process.env.LOCALAPPDATA, 'devcert', 'config');
   } else {
     const uid = process.getuid && process.getuid();
     const userHome =
-      isLinux && uid === 0
+      IS_LINUX && uid === 0
         ? path.resolve('/usr/local/share')
         : require('os').homedir();
     return path.join(userHome, '.config', 'devcert');
@@ -130,9 +131,9 @@ export function getLegacyConfigDir(): string {
 }
 
 export function ensureConfigDirs(): void {
-  mkdirp(configDir);
-  mkdirp(domainsDir);
-  mkdirp(rootCADir);
+  mkdirp(CONFIG_DIR);
+  mkdirp(DOMAINS_DIR);
+  mkdirp(ROOT_CA_DIR);
 }
 
 ensureConfigDirs();
