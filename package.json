@@ -96,11 +96,11 @@
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
     "mkdirp": "^0.5.1",
-    "node-forge": "^0.9.1",
+    "node-forge": "^0.10.0",
     "password-prompt": "^1.0.4",
     "rimraf": "^3.0.2",
     "sudo-prompt": "^8.2.0",
-    "systeminformation": "^4.21.2",
+    "systeminformation": "^5.3.1",
     "tmp": "^0.0.33",
     "yargs": "^15.3.1"
   },
