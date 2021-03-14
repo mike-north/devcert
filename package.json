@@ -88,7 +88,7 @@
     "application-config-path": "^0.1.0",
     "chalk": "^3.0.0",
     "command-exists": "^1.2.4",
-    "configstore": "^3.0.0",
+    "configstore": "^5.0.1",
     "date-fns": "^2.10.0",
     "debug": "^4.3.1",
     "eol": "^0.9.1",
