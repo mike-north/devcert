@@ -547,7 +547,7 @@ export async function trustRemoteMachine(
   }
 
   // Throw any error that might have occurred on the remote side.
-  child.stderr.on('data', (data: execa.StdIOOption) => {
+  child.stderr.on('data', (data: Buffer | string) => {
     if (data) {
       const stdErrData = data.toString().trim();
       debug(stdErrData);
@@ -568,7 +568,7 @@ export async function trustRemoteMachine(
     'log',
     `Attempting to start the server at port ${port}. This may take a while...`
   );
-  child.stdout.on('data', (data: execa.StdIOOption) => {
+  child.stdout.on('data', (data: Buffer | string) => {
     if (data) {
       const stdoutData = data.toString().trim();
       if (stdoutData.includes(`STATE: READY_FOR_CONNECTION`)) {

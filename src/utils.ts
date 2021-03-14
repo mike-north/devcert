@@ -71,7 +71,7 @@ export function sudo(cmd: string): Promise<string | null> {
 
 export function hasSudo(): boolean {
   try {
-    execa.shellSync('sudo -n true');
+    execa.commandSync('sudo -n true');
     return true;
   } catch (e) {
     if (!(e && e.stderr.trim() === 'sudo: a password is required'))
