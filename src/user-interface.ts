@@ -1,4 +1,4 @@
-import passwordPrompt from 'password-prompt';
+import passwordPrompt = require('password-prompt');
 import { waitForUser } from './utils';
 
 /**
