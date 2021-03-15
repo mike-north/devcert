@@ -65,7 +65,7 @@
     "@types/rimraf": "^3.0.0",
     "@types/sinon": "^9.0.11",
     "@types/systeminformation": "^3.54.1",
-    "@types/tmp": "^0.0.33",
+    "@types/tmp": "^0.2.0",
     "@types/yargs": "~16.0.0",
     "@typescript-eslint/eslint-plugin": "^2.17.0",
     "@typescript-eslint/parser": "^2.17.0",
