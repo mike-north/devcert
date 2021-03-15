@@ -97,7 +97,7 @@
     "get-port": "^5.1.1",
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^1.0.4",
     "node-forge": "^0.10.0",
     "password-prompt": "^1.0.4",
     "rimraf": "^3.0.2",
