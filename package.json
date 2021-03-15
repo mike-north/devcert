@@ -101,7 +101,7 @@
     "node-forge": "^0.10.0",
     "password-prompt": "^1.0.4",
     "rimraf": "^3.0.2",
-    "sudo-prompt": "^8.2.0",
+    "sudo-prompt": "^9.2.1",
     "systeminformation": "^5.3.1",
     "tmp": "^0.0.33",
     "yargs": "^16.2.0"
