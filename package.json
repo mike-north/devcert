@@ -78,7 +78,7 @@
     "node-fetch": "^2.6.0",
     "prettier": "^1.19.1",
     "qunit": "^2.10.0",
-    "sinon": "^9.2.4",
+    "sinon": "^10.0.0",
     "standard-version": "^9.1.1",
     "typescript": "^3.7.5"
   },
